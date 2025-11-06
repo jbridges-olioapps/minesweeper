@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaTrophy, FaUser, FaSkull } from "react-icons/fa";
 import { MdTimer } from "react-icons/md";
 import type { Game } from "../lib/supabase";
-import { getPlayerRole } from "../utils/playerId";
+import { getPlayerRole, getPlayerId } from "../utils/playerId";
 
 /**
  * Props for the PlayerStatus component
@@ -296,6 +296,35 @@ export function PlayerStatus({ game }: PlayerStatusProps) {
           </svg>
           <span>You are spectating this game</span>
         </div>
+      )}
+
+      {/* Spectator List */}
+      {game.spectators && game.spectators.length > 0 && (
+        <motion.div
+          className="card bg-base-100 shadow-md"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <div className="card-body p-4">
+            <h3 className="font-semibold text-sm flex items-center gap-2">
+              <FaUser className="text-accent" />
+              Spectators ({game.spectators.length})
+            </h3>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {game.spectators.map((spectatorId, index) => (
+                <div
+                  key={spectatorId}
+                  className="badge badge-accent badge-sm gap-1"
+                >
+                  {spectatorId === getPlayerId()
+                    ? "You"
+                    : `Spectator ${index + 1}`}
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
       )}
     </div>
   );

@@ -160,11 +160,7 @@ export function GameBoard({
   const cols = board[0]?.length || 0;
 
   const handleSendMessage = async (message: string) => {
-    if (playerRole === "spectator") {
-      console.error("Spectators cannot send messages");
-      return false;
-    }
-
+    // Allow spectators to send messages too, but label them as spectators
     return await sendMessage(message, playerId, playerRole as PlayerTurn);
   };
 
@@ -254,8 +250,9 @@ export function GameBoard({
           messages={messages}
           playerRole={playerRole}
           onSendMessage={handleSendMessage}
-          disabled={playerRole === "spectator"}
+          disabled={false}
           loading={chatLoading}
+          spectators={game.spectators || []}
         />
       </div>
     </div>

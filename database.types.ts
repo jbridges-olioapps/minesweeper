@@ -22,6 +22,7 @@ export type Database = {
           id: string;
           player1_id: string;
           player2_id: string | null;
+          spectators: string[];
           status: string;
           turn_phase: string | null;
           updated_at: string;
@@ -34,6 +35,7 @@ export type Database = {
           id?: string;
           player1_id: string;
           player2_id?: string | null;
+          spectators?: string[];
           status?: string;
           turn_phase?: string | null;
           updated_at?: string;
@@ -46,6 +48,7 @@ export type Database = {
           id?: string;
           player1_id?: string;
           player2_id?: string | null;
+          spectators?: string[];
           status?: string;
           turn_phase?: string | null;
           updated_at?: string;

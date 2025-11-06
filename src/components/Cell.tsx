@@ -122,6 +122,61 @@ export function Cell({
       );
     }
 
+    // For spectators: Show ALL flags with color coding
+    if (
+      playerRole === "spectator" &&
+      cell.flagged &&
+      gameStatus !== "finished"
+    ) {
+      const flagColor =
+        cell.flagPlacedBy === "player1"
+          ? "text-primary"
+          : cell.flagPlacedBy === "player2"
+          ? "text-secondary"
+          : "text-warning";
+      const flagTitle =
+        cell.flagPlacedBy === "player1"
+          ? "Player 1's flag"
+          : cell.flagPlacedBy === "player2"
+          ? "Player 2's flag"
+          : "Flag";
+
+      return (
+        <FaFlag
+          className={flagColor}
+          title={flagTitle}
+          aria-label={flagTitle}
+        />
+      );
+    }
+
+    // For spectators: Show ALL mines (even unrevealed) with color coding
+    if (
+      playerRole === "spectator" &&
+      cell.hasMine &&
+      !cell.revealed &&
+      gameStatus !== "finished"
+    ) {
+      let mineColor = "text-base-content/50"; // Dimmed for pre-placed mines
+      let mineTitle = "Pre-placed mine";
+
+      if (cell.minePlacedBy === "player1") {
+        mineColor = "text-primary/70";
+        mineTitle = "Player 1's mine";
+      } else if (cell.minePlacedBy === "player2") {
+        mineColor = "text-secondary/70";
+        mineTitle = "Player 2's mine";
+      }
+
+      return (
+        <FaBomb
+          className={mineColor}
+          title={mineTitle}
+          aria-label={mineTitle}
+        />
+      );
+    }
+
     // Show flag if cell is flagged AND it belongs to the current player (only during active game)
     if (
       gameStatus !== "finished" &&

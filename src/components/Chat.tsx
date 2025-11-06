@@ -22,6 +22,8 @@ interface ChatProps {
   disabled?: boolean;
   /** Whether messages are loading */
   loading?: boolean;
+  /** Array of spectator IDs in order they joined */
+  spectators?: string[];
 }
 
 /**
@@ -42,6 +44,7 @@ export function Chat({
   onSendMessage,
   disabled = false,
   loading = false,
+  spectators = [],
 }: ChatProps) {
   const [inputValue, setInputValue] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -105,9 +108,20 @@ export function Chat({
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  const getPlayerName = (role: string) => {
+  const getPlayerName = (role: string, messageSenderId?: string) => {
     if (role === playerRole) return "You";
-    return role === "player1" ? "Player 1" : "Player 2";
+    if (role === "player1") return "Player 1";
+    if (role === "player2") return "Player 2";
+
+    // For spectators, show their number based on join order
+    if (role === "spectator" && messageSenderId) {
+      const spectatorIndex = spectators.indexOf(messageSenderId);
+      if (spectatorIndex !== -1) {
+        return `Spectator ${spectatorIndex + 1}`;
+      }
+    }
+
+    return "Spectator";
   };
 
   const getMessageClassName = (messageRole: string) => {
@@ -117,6 +131,14 @@ export function Chat({
 
   const getBubbleClassName = (messageRole: string) => {
     const isOwnMessage = messageRole === playerRole;
+
+    // Spectator messages have a different color
+    if (messageRole === "spectator") {
+      return `chat-bubble ${
+        isOwnMessage ? "chat-bubble-accent" : "chat-bubble-ghost"
+      }`;
+    }
+
     return `chat-bubble ${
       isOwnMessage ? "chat-bubble-primary" : "chat-bubble-secondary"
     }`;
@@ -208,7 +230,10 @@ export function Chat({
                           transition={{ delay: index * 0.05 }}
                         >
                           <div className="chat-header text-xs opacity-70 mb-1">
-                            {getPlayerName(message.player_role)}
+                            {getPlayerName(
+                              message.player_role,
+                              message.player_id
+                            )}
                             <time className="ml-1">
                               {formatTimestamp(message.created_at)}
                             </time>

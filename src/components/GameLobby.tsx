@@ -213,40 +213,76 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
         player2_id: game.player2_id,
       });
 
-      // Check if game is available to join
-      if (game.status !== "waiting") {
-        throw new Error("This game is no longer available to join");
-      }
-
-      if (game.player2_id) {
-        throw new Error("This game already has two players");
-      }
-
+      // Check if this player is already player1
       if (game.player1_id === playerId) {
         throw new Error("You cannot join your own game");
       }
 
-      // Join the game
-      console.log("[GameLobby] Updating game to add player 2...");
-      const { data: updatedGame, error: updateError } = await supabase
-        .from("games")
-        .update({
-          player2_id: playerId,
-          status: "active",
-        })
-        .eq("id", joinGameId.trim())
-        .select()
-        .single();
-
-      if (updateError) {
-        console.error("[GameLobby] Error updating game:", updateError);
-        throw updateError;
+      // Check if this player is already player2
+      if (game.player2_id === playerId) {
+        // Already in the game, just rejoin
+        console.log("[GameLobby] Player is already player2, rejoining...");
+        onGameJoined(game);
+        return;
       }
 
-      console.log("[GameLobby] Successfully joined game:", updatedGame);
+      // Check if this player is already a spectator
+      if (game.spectators?.includes(playerId)) {
+        // Already spectating, just rejoin
+        console.log("[GameLobby] Player is already a spectator, rejoining...");
+        onGameJoined(game);
+        return;
+      }
+
+      let updatedGame: Game | null = null;
+
+      // If game is waiting for player 2, join as player 2
+      if (game.status === "waiting" && !game.player2_id) {
+        console.log("[GameLobby] Joining as player 2...");
+        const { data, error: updateError } = await supabase
+          .from("games")
+          .update({
+            player2_id: playerId,
+            status: "active",
+          })
+          .eq("id", joinGameId.trim())
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error("[GameLobby] Error updating game:", updateError);
+          throw updateError;
+        }
+
+        updatedGame = data;
+        console.log("[GameLobby] Successfully joined as player 2");
+      }
+      // If game already has 2 players, join as spectator
+      else if (game.player2_id) {
+        console.log("[GameLobby] Game has 2 players, joining as spectator...");
+        const currentSpectators = game.spectators || [];
+        const { data, error: updateError } = await supabase
+          .from("games")
+          .update({
+            spectators: [...currentSpectators, playerId],
+          })
+          .eq("id", joinGameId.trim())
+          .select()
+          .single();
+
+        if (updateError) {
+          console.error("[GameLobby] Error adding spectator:", updateError);
+          throw updateError;
+        }
+
+        updatedGame = data;
+        console.log("[GameLobby] Successfully joined as spectator");
+      } else {
+        throw new Error("Unable to join game in current state");
+      }
 
       if (updatedGame) {
-        console.log("[GameLobby] Calling onGameJoined for player 2");
+        console.log("[GameLobby] Calling onGameJoined");
         onGameJoined(updatedGame);
       }
     } catch (err) {

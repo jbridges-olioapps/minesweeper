@@ -62,15 +62,36 @@ export function isPlayer2(game: { player2_id: string | null }): boolean {
  * Get which player role this browser has in a game.
  * Returns "spectator" if the browser is neither player1 nor player2.
  *
- * @param game - Game object containing player IDs
+ * @param game - Game object containing player IDs and spectators
  * @returns "player1", "player2", or "spectator"
  */
 export function getPlayerRole(game: {
   player1_id: string;
   player2_id: string | null;
+  spectators?: string[];
 }): "player1" | "player2" | "spectator" {
   const playerId = getPlayerId();
   if (game.player1_id === playerId) return "player1";
   if (game.player2_id === playerId) return "player2";
   return "spectator";
+}
+
+/**
+ * Check if the current player is a spectator in a game.
+ * A player is a spectator if they are in the spectators array.
+ *
+ * @param game - Game object containing spectators array
+ * @returns True if the current player is in the spectators array
+ */
+export function isSpectator(game: {
+  player1_id: string;
+  player2_id: string | null;
+  spectators?: string[];
+}): boolean {
+  const playerId = getPlayerId();
+  return (
+    game.spectators?.includes(playerId) === true &&
+    game.player1_id !== playerId &&
+    game.player2_id !== playerId
+  );
 }
