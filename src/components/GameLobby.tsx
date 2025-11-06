@@ -41,10 +41,23 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
   const [createdGameId, setCreatedGameId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  // Board configuration
-  const [rows, setRows] = useState(10);
-  const [cols, setCols] = useState(10);
-  const [initialMines, setInitialMines] = useState(10);
+  // Difficulty level configuration
+  type Difficulty = "beginner" | "intermediate" | "expert";
+  const [difficulty, setDifficulty] = useState<Difficulty>("beginner");
+
+  // Get board configuration based on difficulty
+  const getDifficultyConfig = (level: Difficulty) => {
+    switch (level) {
+      case "beginner":
+        return { rows: 8, cols: 8, mines: 10 };
+      case "intermediate":
+        return { rows: 16, cols: 16, mines: 40 };
+      case "expert":
+        return { rows: 16, cols: 30, mines: 99 };
+    }
+  };
+
+  const { rows, cols, mines: initialMines } = getDifficultyConfig(difficulty);
 
   const playerId = getPlayerId();
 
@@ -379,64 +392,74 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
 
               <div className="divider"></div>
 
-              {/* Board Configuration */}
+              {/* Difficulty Selection */}
               <div className="space-y-4">
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text">Board Rows</span>
-                    <span className="label-text-alt text-base-content/60">
-                      {rows}
+                    <span className="label-text font-semibold">
+                      Select Difficulty
                     </span>
                   </label>
-                  <input
-                    type="range"
-                    min="5"
-                    max="20"
-                    value={rows}
-                    onChange={(e) => setRows(Number(e.target.value))}
-                    className="range range-primary range-sm"
-                  />
+
+                  <div className="space-y-3">
+                    {/* Beginner */}
+                    <label className="label cursor-pointer justify-start gap-3 hover:bg-base-200 p-3 rounded-lg transition-colors">
+                      <input
+                        type="radio"
+                        name="difficulty"
+                        className="radio radio-primary"
+                        checked={difficulty === "beginner"}
+                        onChange={() => setDifficulty("beginner")}
+                      />
+                      <div className="flex-1">
+                        <span className="label-text font-semibold">
+                          Beginner
+                        </span>
+                        <p className="text-xs text-base-content/60">
+                          8×8 grid with 10 mines
+                        </p>
+                      </div>
+                    </label>
+
+                    {/* Intermediate */}
+                    <label className="label cursor-pointer justify-start gap-3 hover:bg-base-200 p-3 rounded-lg transition-colors">
+                      <input
+                        type="radio"
+                        name="difficulty"
+                        className="radio radio-primary"
+                        checked={difficulty === "intermediate"}
+                        onChange={() => setDifficulty("intermediate")}
+                      />
+                      <div className="flex-1">
+                        <span className="label-text font-semibold">
+                          Intermediate
+                        </span>
+                        <p className="text-xs text-base-content/60">
+                          16×16 grid with 40 mines
+                        </p>
+                      </div>
+                    </label>
+
+                    {/* Expert */}
+                    <label className="label cursor-pointer justify-start gap-3 hover:bg-base-200 p-3 rounded-lg transition-colors">
+                      <input
+                        type="radio"
+                        name="difficulty"
+                        className="radio radio-primary"
+                        checked={difficulty === "expert"}
+                        onChange={() => setDifficulty("expert")}
+                      />
+                      <div className="flex-1">
+                        <span className="label-text font-semibold">Expert</span>
+                        <p className="text-xs text-base-content/60">
+                          30×16 grid with 99 mines
+                        </p>
+                      </div>
+                    </label>
+                  </div>
                 </div>
 
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Board Columns</span>
-                    <span className="label-text-alt text-base-content/60">
-                      {cols}
-                    </span>
-                  </label>
-                  <input
-                    type="range"
-                    min="5"
-                    max="20"
-                    value={cols}
-                    onChange={(e) => setCols(Number(e.target.value))}
-                    className="range range-primary range-sm"
-                  />
-                </div>
-
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Initial Mines</span>
-                    <span className="label-text-alt text-base-content/60">
-                      {initialMines}
-                    </span>
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max={Math.floor((rows * cols) / 3)}
-                    value={initialMines}
-                    onChange={(e) => setInitialMines(Number(e.target.value))}
-                    className="range range-primary range-sm"
-                  />
-                  <label className="label">
-                    <span className="label-text-alt">
-                      Pre-placed random mines on the board
-                    </span>
-                  </label>
-                </div>
-
+                {/* Selected Configuration Display */}
                 <div className="stats stats-vertical lg:stats-horizontal shadow bg-base-200 w-full">
                   <div className="stat py-2">
                     <div className="stat-title text-xs">Board Size</div>

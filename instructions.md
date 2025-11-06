@@ -29,18 +29,19 @@
 
 ## Game Features
 
-### Configurable Board Setup
+### Difficulty Levels
 
-- **Custom Board Dimensions**: Players can choose board size from 5x5 to 20x20
-- **Pre-placed Mines**: Configure initial number of random mines (0 to board size / 3)
+- **Three Preset Difficulty Levels** with classic Minesweeper dimensions:
+  - **Beginner**: 8×8 grid with 10 mines (64 cells)
+  - **Intermediate**: 16×16 grid with 40 mines (256 cells)
+  - **Expert**: 30×16 grid with 99 mines (480 cells)
 - **Strategic Gameplay**: Multiple ways to lose
   - **Revealing ANY mine**: Causes you to lose immediately
   - **Placing mine on existing mine**: Instant loss! Be careful where you place
   - Pre-placed mines (no player attribution) add extra danger
   - Player-placed mines create strategic traps
   - Goal: Avoid mines while forcing opponent into them
-- **Dynamic Mine Density**: Larger boards support more pre-placed mines
-- **Real-time Configuration Preview**: See board stats (size, cells, mines) before creating
+- **Real-time Configuration Preview**: See board stats (size, cells, mines) after selecting difficulty
 
 ## Supabase Setup
 
@@ -156,11 +157,12 @@
 ### 10. Game Lobby Component
 
 - Create `src/components/GameLobby.tsx`:
-- **Board Configuration UI:**
-  - Sliders for rows (5-20), columns (5-20), and initial mines (0 to board size / 3)
-  - Real-time preview of board stats (size, total cells, mine count)
-  - Validation to prevent too many mines
-- Allow player to create new game with custom configuration (uses `getPlayerId()` for player1_id)
+- **Difficulty Selection UI:**
+  - DaisyUI radio buttons for three difficulty levels (Beginner, Intermediate, Expert)
+  - Each option displays grid size and mine count
+  - Hover effects on radio button labels for better UX
+  - Real-time preview stats showing board size, total cells, and mines
+- Allow player to create new game with selected difficulty (uses `getPlayerId()` for player1_id)
 - Generate board with random pre-placed mines using `generateBoardWithMines(rows, cols, initialMines)`
 - Display game code/ID for sharing
 - Allow second player to join via game ID (uses `getPlayerId()` for player2_id)
