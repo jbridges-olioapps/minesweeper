@@ -1,164 +1,78 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { GameBoard } from "./components/GameBoard";
 import { GameLobby } from "./components/GameLobby";
 import { PlayerStatus } from "./components/PlayerStatus";
-import {
-  generateEmptyBoard,
-  placeMine,
-  revealCell,
-  toggleFlag,
-} from "./utils/minesweeper";
-import type { Board, GameState } from "./types/game";
+import { useRealtimeGame } from "./hooks/useRealtimeGame";
 import type { Game } from "./lib/supabase";
-import { supabase } from "./lib/supabase";
 import "./App.css";
 
 function App() {
-  const [currentGame, setCurrentGame] = useState<Game | null>(null);
-  const [board, setBoard] = useState<Board>(() => generateEmptyBoard(8, 8));
+  const [gameId, setGameId] = useState<string | null>(null);
 
-  // Subscribe to game updates
-  useEffect(() => {
-    if (!currentGame) return;
+  // Use the real-time game hook
+  const { game, board, loading, error, placeMine, revealCell, toggleFlag } =
+    useRealtimeGame(gameId);
 
-    const channel = supabase
-      .channel(`game:${currentGame.id}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "games",
-          filter: `id=eq.${currentGame.id}`,
-        },
-        (payload) => {
-          console.log("Game updated:", payload);
-          const updatedGame = payload.new as Game;
-          setCurrentGame(updatedGame);
-
-          // Update board from game state
-          if (updatedGame.game_state) {
-            const gameState = updatedGame.game_state as unknown as GameState;
-            if (gameState.board) {
-              setBoard(gameState.board);
-            }
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [currentGame?.id]);
-
-  // Load initial board state when game is joined
-  useEffect(() => {
-    if (currentGame?.game_state) {
-      const gameState = currentGame.game_state as unknown as GameState;
-      if (gameState.board) {
-        setBoard(gameState.board);
-      }
-    }
-  }, [currentGame]);
-
-  const handleGameJoined = (game: Game) => {
-    setCurrentGame(game);
+  const handleGameJoined = (joinedGame: Game) => {
+    setGameId(joinedGame.id);
   };
 
   const handleCellClick = async (row: number, col: number) => {
-    if (!currentGame) return;
+    if (!game) return;
 
-    let newBoard = board;
-
-    if (currentGame.turn_phase === "place_mine") {
-      // Place a mine
-      newBoard = placeMine(
-        board,
-        row,
-        col,
-        currentGame.current_turn as "player1" | "player2"
-      );
-
-      // Update game to reveal phase
-      const { error } = await supabase
-        .from("games")
-        .update({
-          game_state: {
-            board: newBoard,
-            rows: 8,
-            cols: 8,
-            minesPlacedByPlayer1: 0, // TODO: calculate actual count
-            minesPlacedByPlayer2: 0,
-          } as any,
-          turn_phase: "reveal_cell",
-        })
-        .eq("id", currentGame.id);
-
-      if (error) {
-        console.error("Error updating game:", error);
-        return;
-      }
-    } else if (currentGame.turn_phase === "reveal_cell") {
-      // Reveal cell
-      newBoard = revealCell(board, row, col);
-
-      // Switch turn to next player
-      const nextTurn =
-        currentGame.current_turn === "player1" ? "player2" : "player1";
-
-      const { error } = await supabase
-        .from("games")
-        .update({
-          game_state: {
-            board: newBoard,
-            rows: 8,
-            cols: 8,
-            minesPlacedByPlayer1: 0, // TODO: calculate actual count
-            minesPlacedByPlayer2: 0,
-          } as any,
-          current_turn: nextTurn,
-          turn_phase: "place_mine",
-        })
-        .eq("id", currentGame.id);
-
-      if (error) {
-        console.error("Error updating game:", error);
-        return;
-      }
+    if (game.turn_phase === "place_mine") {
+      await placeMine(row, col);
+    } else if (game.turn_phase === "reveal_cell") {
+      await revealCell(row, col);
     }
-
-    setBoard(newBoard);
   };
 
   const handleCellRightClick = async (row: number, col: number) => {
-    if (!currentGame) return;
-
-    const newBoard = toggleFlag(board, row, col);
-    setBoard(newBoard);
-
-    // Update game state
-    const { error } = await supabase
-      .from("games")
-      .update({
-        game_state: {
-          board: newBoard,
-          rows: 8,
-          cols: 8,
-          minesPlacedByPlayer1: 0, // TODO: calculate actual count
-          minesPlacedByPlayer2: 0,
-        } as any,
-      })
-      .eq("id", currentGame.id);
-
-    if (error) {
-      console.error("Error updating game:", error);
-    }
+    await toggleFlag(row, col);
   };
 
   // Show lobby if no game
-  if (!currentGame) {
+  if (!gameId || !game) {
     return <GameLobby onGameJoined={handleGameJoined} />;
+  }
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-base-300 flex items-center justify-center">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-base-300 flex items-center justify-center p-4">
+        <div className="alert alert-error max-w-lg">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="stroke-current shrink-0 h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <div>
+            <h3 className="font-bold">Error loading game</h3>
+            <div className="text-sm">{error}</div>
+          </div>
+          <button className="btn btn-sm" onClick={() => setGameId(null)}>
+            Back to Lobby
+          </button>
+        </div>
+      </div>
+    );
   }
 
   // Show game board
@@ -169,7 +83,7 @@ function App() {
           <h1 className="text-4xl font-bold mb-2">Multiplayer Minesweeper</h1>
           <button
             className="btn btn-ghost btn-sm"
-            onClick={() => setCurrentGame(null)}
+            onClick={() => setGameId(null)}
           >
             ← Back to Lobby
           </button>
@@ -177,12 +91,12 @@ function App() {
 
         {/* Player Status */}
         <div className="max-w-2xl mx-auto mb-6">
-          <PlayerStatus game={currentGame} />
+          <PlayerStatus game={game} />
         </div>
 
         {/* Game Board */}
         <GameBoard
-          game={currentGame}
+          game={game}
           board={board}
           onCellClick={handleCellClick}
           onCellRightClick={handleCellRightClick}
