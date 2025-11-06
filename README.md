@@ -74,7 +74,28 @@ export default defineConfig([
 
 # Multiplayer Minesweeper
 
-A multiplayer Minesweeper game built with React, TypeScript, and Supabase.
+A competitive multiplayer Minesweeper game built with React, TypeScript, and Supabase. Players take turns placing mines and revealing cells, trying to outsmart their opponent!
+
+## How It Works
+
+### Game Flow
+
+1. **Player 1 creates a game** - Gets a unique game ID to share
+2. **Player 2 joins** - Uses the game ID to join
+3. **Competitive gameplay**: Each turn consists of:
+   - **Place a mine** - Strategically place a mine on the board
+   - **Reveal a cell** - Try to avoid opponent's mines while revealing safe cells
+   - Turn passes to the other player
+4. **Win condition**: Make your opponent reveal a mine!
+
+### Player Identification (No Auth Required!)
+
+This app uses a **simple localStorage-based player system** - perfect for hackathons and demos:
+
+- Each browser/device automatically gets a unique player ID (stored in localStorage)
+- No accounts, no passwords, no authentication needed
+- Share the game ID with a friend on a different device to play together
+- Works perfectly on GitHub Pages (static hosting)
 
 ## Setup
 

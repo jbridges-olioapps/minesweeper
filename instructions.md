@@ -63,7 +63,17 @@
 - `Game` type (database record structure matching schema: id, player1_id, player2_id, current_turn, turn_phase, game_state, status, winner, created_at, updated_at)
 - `Move` type (row, col, action: 'place_mine' | 'reveal_cell')
 
-### 6. Minesweeper Game Logic
+### 6. Player Identification (No Auth Required!)
+
+- Create `src/utils/playerId.ts` with simple player ID management:
+- `getPlayerId()` - Get or generate a player ID from localStorage (8-char random string)
+- `isPlayer1(game)` - Check if current browser is player1
+- `isPlayer2(game)` - Check if current browser is player2
+- `getPlayerRole(game)` - Returns "player1", "player2", or "spectator"
+- **No authentication needed** - each browser/device gets a unique ID in localStorage
+- Perfect for hackathon/demo projects and GitHub Pages deployment
+
+### 7. Minesweeper Game Logic
 
 - Create `src/utils/minesweeper.ts` with core game functions:
 - `generateEmptyBoard(rows, cols)` - Generate empty board without mines
@@ -77,7 +87,7 @@
 
 ## React Components
 
-### 7. Game Board Component
+### 8. Game Board Component
 
 - Create `src/components/GameBoard.tsx`:
 - Render grid of cells
@@ -90,7 +100,7 @@
 - Show phase-specific instructions ("Place your mine" or "Reveal a cell")
 - The Gameboard will present a different view depending on the player (hide opponent's mines)
 
-### 8. Cell Component
+### 9. Cell Component
 
 - Create `src/components/Cell.tsx`:
 - Render individual cell with appropriate styling
@@ -99,24 +109,25 @@
 - Show hidden state
 - Handle click events (disabled when not player's turn)
 
-### 9. Game Lobby Component
+### 10. Game Lobby Component
 
 - Create `src/components/GameLobby.tsx`:
-- Allow player to create new game
+- Allow player to create new game (uses `getPlayerId()` for player1_id)
 - Display game code/ID for sharing
-- Allow second player to join via game ID
+- Allow second player to join via game ID (uses `getPlayerId()` for player2_id)
 - Show waiting state until both players join
 
-### 10. Player Status Component
+### 11. Player Status Component
 
 - Create `src/components/PlayerStatus.tsx`:
 - Display current player's turn
 - Show both players' status
 - Display game result (winner/loser)
+- Use `getPlayerRole()` to determine if viewing as player1, player2, or spectator
 
 ## Real-time Hooks
 
-### 11. Game State Hook
+### 12. Game State Hook
 
 - Create `src/hooks/useRealtimeGame.ts`:
 - Fetch initial game state from Supabase
@@ -129,24 +140,24 @@
 - Evaluate win/loss conditions after each reveal
 - Clean up subscriptions on unmount
 
-### 12. Game Management Hook
+### 13. Game Management Hook
 
 - Create `src/hooks/useGame.ts`:
-- Handle game creation
-- Handle joining existing games
-- Manage player IDs
+- Handle game creation (use `getPlayerId()` for player1_id)
+- Handle joining existing games (use `getPlayerId()` for player2_id)
+- Manage player IDs via localStorage
 - Handle game state synchronization
 
 ## Main Application
 
-### 13. App Component
+### 14. App Component
 
 - Create `src/App.tsx`:
 - Route between lobby and game board
-- Manage game ID and player ID state
+- Manage game ID state (player ID handled by `getPlayerId()`)
 - Handle game lifecycle (create, join, play)
 
-### 14. Entry Point
+### 15. Entry Point
 
 - Update `src/main.tsx`:
 - Set up React root
@@ -155,7 +166,7 @@
 
 ## Styling
 
-### 15. Game Styling
+### 16. Game Styling
 
 - Create `src/index.css` with:
 - Board grid layout
@@ -167,17 +178,17 @@
 
 ## Testing & Validation
 
-### 16. Move Validation
+### 17. Move Validation
 
 - Add client-side validation:
-- Check if it's player's turn
+- Check if it's player's turn (use `getPlayerRole()`)
 - Validate cell coordinates
 - For `placeMine`: Check turn_phase is 'place_mine', cell not revealed, cell doesn't already have mine
 - For `revealCell`: Check turn_phase is 'reveal_cell', cell not already revealed
 - Prevent flagging revealed cells
 - Ensure actions match current turn phase
 
-### 17. Error Handling
+### 18. Error Handling
 
 - Add error handling for:
 - Supabase connection failures
@@ -187,13 +198,13 @@
 
 ## Deployment
 
-### 18. Build Configuration
+### 19. Build Configuration
 
 - Configure Vite build settings
 - Set up environment variable handling for production
 - Test production build locally
 
-### 19. Deployment Setup
+### 20. Deployment Setup
 
 - **Option A (Free)**: Deploy via GitHub Actions to Netlify (bypasses private org restriction)
 - Create GitHub Actions workflow to build and deploy
@@ -219,7 +230,7 @@
 
 ## Documentation
 
-### 20. Create Documentation
+### 21. Create Documentation
 
 - Create README with setup instructions
 - Document environment variables needed
