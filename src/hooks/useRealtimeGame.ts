@@ -272,9 +272,10 @@ export function useRealtimeGame(gameId: string | null) {
         };
 
         if (loseCheck.hitMine) {
-          // Current player hit a mine - they lose
+          // Current player hit a mine - they lose, opponent wins
           gameStatus = "finished";
-          winner = loseCheck.minePlacedBy; // The player who placed the mine wins
+          // Opponent wins (the player who did NOT reveal the mine)
+          winner = playerRole === "player1" ? "player2" : "player1";
           // Track losing cell and reason
           gameStateUpdate.losingCell = { row, col };
           gameStateUpdate.lossReason = "revealed_mine";
