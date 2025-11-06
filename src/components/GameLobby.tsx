@@ -10,6 +10,7 @@ import { supabase } from "../lib/supabase";
 import type { Game } from "../lib/supabase";
 import { getPlayerId } from "../utils/playerId";
 import { generateBoardWithMines } from "../utils/minesweeper";
+import { ThemeController } from "./ThemeController";
 
 /**
  * Props for the GameLobby component
@@ -287,7 +288,10 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
     return (
       <div className="min-h-screen bg-base-300 flex items-center justify-center p-4">
         <div className="card bg-base-100 shadow-xl max-w-2xl w-full">
-          <div className="card-body">
+          <div className="card-body relative">
+            <div className="absolute top-4 right-4">
+              <ThemeController />
+            </div>
             <h2 className="card-title text-2xl justify-center">
               <FaUsers className="text-primary" />
               Waiting for Opponent
@@ -350,12 +354,17 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
     <div className="min-h-screen bg-base-300 flex items-center justify-center p-4">
       <div className="max-w-4xl w-full space-y-6">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-5xl font-bold">Multiplayer Minesweeper</h1>
-          <p className="text-base-content/70">
-            Competitive mine-placing action! Place mines and reveal cells to
-            outsmart your opponent.
-          </p>
+        <div className="relative">
+          <div className="absolute top-0 right-0">
+            <ThemeController />
+          </div>
+          <div className="text-center space-y-2">
+            <h1 className="text-5xl font-bold">Multiplayer Minesweeper</h1>
+            <p className="text-base-content/70">
+              Competitive mine-placing action! Place mines and reveal cells to
+              outsmart your opponent.
+            </p>
+          </div>
         </div>
 
         {/* Error Alert */}
@@ -401,52 +410,28 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
                     </span>
                   </label>
 
-                  <div className="flex flex-col gap-3">
-                    {/* Beginner */}
-                    <label className="label cursor-pointer justify-start gap-3 hover:bg-base-200 p-3 rounded-lg transition-colors">
-                      <input
-                        type="radio"
-                        name="difficulty"
-                        className="radio radio-primary"
-                        checked={difficulty === "beginner"}
-                        onChange={() => setDifficulty("beginner")}
-                      />
-                      <div className="flex-1">
-                        <span className="label-text font-semibold">
-                          Beginner
-                        </span>
-                      </div>
-                    </label>
-
-                    {/* Intermediate */}
-                    <label className="label cursor-pointer justify-start gap-3 hover:bg-base-200 p-3 rounded-lg transition-colors">
-                      <input
-                        type="radio"
-                        name="difficulty"
-                        className="radio radio-primary"
-                        checked={difficulty === "intermediate"}
-                        onChange={() => setDifficulty("intermediate")}
-                      />
-                      <div className="flex-1">
-                        <span className="label-text font-semibold">
-                          Intermediate
-                        </span>
-                      </div>
-                    </label>
-
-                    {/* Expert */}
-                    <label className="label cursor-pointer justify-start gap-3 hover:bg-base-200 p-3 rounded-lg transition-colors">
-                      <input
-                        type="radio"
-                        name="difficulty"
-                        className="radio radio-primary"
-                        checked={difficulty === "expert"}
-                        onChange={() => setDifficulty("expert")}
-                      />
-                      <div className="flex-1">
-                        <span className="label-text font-semibold">Expert</span>
-                      </div>
-                    </label>
+                  <div role="tablist" className="tabs tabs-boxed justify-center">
+                    <button
+                      role="tab"
+                      className={`tab ${difficulty === "beginner" ? "tab-active font-bold" : ""}`}
+                      onClick={() => setDifficulty("beginner")}
+                    >
+                      Beginner
+                    </button>
+                    <button
+                      role="tab"
+                      className={`tab ${difficulty === "intermediate" ? "tab-active font-bold" : ""}`}
+                      onClick={() => setDifficulty("intermediate")}
+                    >
+                      Intermediate
+                    </button>
+                    <button
+                      role="tab"
+                      className={`tab ${difficulty === "expert" ? "tab-active font-bold" : ""}`}
+                      onClick={() => setDifficulty("expert")}
+                    >
+                      Expert
+                    </button>
                   </div>
                 </div>
 
