@@ -17,9 +17,9 @@ If you are developing a production application, we recommend updating the config
 
 ```js
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(["dist"]),
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ["**/*.{ts,tsx}"],
     extends: [
       // Other configs...
 
@@ -34,62 +34,160 @@ export default defineConfig([
     ],
     languageOptions: {
       parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
         tsconfigRootDir: import.meta.dirname,
       },
       // other options...
     },
   },
-])
+]);
 ```
 
 You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
 ```js
 // eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+import reactX from "eslint-plugin-react-x";
+import reactDom from "eslint-plugin-react-dom";
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(["dist"]),
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ["**/*.{ts,tsx}"],
     extends: [
       // Other configs...
       // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
+      reactX.configs["recommended-typescript"],
       // Enable lint rules for React DOM
       reactDom.configs.recommended,
     ],
     languageOptions: {
       parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        project: ["./tsconfig.node.json", "./tsconfig.app.json"],
         tsconfigRootDir: import.meta.dirname,
       },
       // other options...
     },
   },
-])
+]);
 ```
+
 # Multiplayer Minesweeper
 
 A multiplayer Minesweeper game built with React, TypeScript, and Supabase.
 
 ## Setup
 
+### Prerequisites
+
+- Node.js 18+ and pnpm
+- Docker Desktop (for local Supabase development)
+- Supabase CLI
+
+### Install Supabase CLI
+
+#### macOS
+
+```bash
+brew install supabase/tap/supabase
+```
+
+#### Other platforms
+
+See [Supabase CLI documentation](https://supabase.com/docs/guides/cli/getting-started)
+
+### Supabase Setup
+
+#### 1. Create a Supabase Project
+
+1. Go to [supabase.com](https://supabase.com) and create a new project
+2. Note your project reference ID (found in Project Settings)
+
+#### 2. Authenticate Supabase CLI
+
+Generate an access token and log in:
+
+```bash
+# Option 1: Interactive login (if in a terminal)
+supabase login
+
+# Option 2: Login with access token
+# Get your token from: https://supabase.com/dashboard/account/tokens
+supabase login --token YOUR_ACCESS_TOKEN
+
+# Option 3: Set environment variable
+export SUPABASE_ACCESS_TOKEN=your_access_token
+```
+
+#### 3. Link to Your Remote Project
+
+```bash
+# Link to your Supabase project
+supabase link --project-ref your-project-ref
+
+# Example:
+# supabase link --project-ref razklaljmaodzggbfidd
+```
+
+#### 4. Local Development with Supabase
+
+Start local Supabase services (requires Docker Desktop):
+
+```bash
+# Start local Supabase
+supabase start
+
+# This will output:
+# - API URL
+# - Database URL
+# - Studio URL (local dashboard)
+# - Anon key (for local development)
+```
+
+Apply database migrations locally:
+
+```bash
+# Reset and apply all migrations
+supabase db reset
+
+# Or apply migrations without resetting
+supabase migration up
+```
+
+#### 5. Push Schema to Remote Database
+
+Once you're satisfied with local development:
+
+```bash
+# Push migrations to remote Supabase project
+supabase db push
+```
+
 ### Environment Variables
 
-Create a `.env` file in the root directory with your Supabase credentials:
+Create a `.env` file in the root directory:
 
+**For local development:**
+
+```bash
+VITE_SUPABASE_URL=http://127.0.0.1:54321
+VITE_SUPABASE_ANON_KEY=your_local_anon_key_from_supabase_start
 ```
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+**For production (remote Supabase):**
+
+```bash
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your_production_anon_key
 ```
 
 ### Development
 
 ```bash
+# Install dependencies
 pnpm install
+
+# Start development server
 pnpm dev
 ```
 
@@ -108,10 +206,54 @@ pnpm test:supabase
 ```
 
 This will:
+
 - ✅ Check that your environment variables are loaded
 - ✅ Test the connection to Supabase
 - ✅ Verify your API key is valid
 - ⚠️ Note: The `games` table warning is expected if you haven't created the schema yet
+
+### Useful Supabase CLI Commands
+
+```bash
+# View local Supabase status
+supabase status
+
+# Stop local Supabase
+supabase stop
+
+# View database migrations
+supabase migration list
+
+# Create a new migration
+supabase migration new migration_name
+
+# Pull remote schema changes to local
+supabase db pull
+
+# Open local Supabase Studio (dashboard)
+# Visit the Studio URL from `supabase status`
+
+# Check if you're logged in
+supabase projects list
+```
+
+### Troubleshooting
+
+**"Unauthorized" error when linking:**
+
+- Make sure you've logged in with `supabase login`
+- Generate a new access token from https://supabase.com/dashboard/account/tokens
+- Try: `export SUPABASE_ACCESS_TOKEN=your_token_here`
+
+**Docker permission errors:**
+
+- Ensure Docker Desktop is running
+- On macOS, check Docker Desktop settings for file access permissions
+
+**Migration already exists error:**
+
+- Check `supabase/migrations/` folder for existing migrations
+- Use `supabase db push --dry-run` to preview changes before pushing
 
 ## Deployment to GitHub Pages
 
@@ -140,6 +282,7 @@ This will:
 ### Step 3: Deploy
 
 The GitHub Actions workflow (`.github/workflows/deploy.yml`) will automatically:
+
 - Build the project with your Supabase credentials
 - Deploy the `dist/` folder to GitHub Pages
 
