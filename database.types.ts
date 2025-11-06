@@ -92,7 +92,21 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      leaderboard: {
+        Row: {
+          player_id: string;
+          total_wins: number;
+        };
+        Insert: {
+          player_id?: never;
+          total_wins?: never;
+        };
+        Update: {
+          player_id?: never;
+          total_wins?: never;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       [_ in never]: never;

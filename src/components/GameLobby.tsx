@@ -11,6 +11,7 @@ import type { Game } from "../lib/supabase";
 import { getPlayerId } from "../utils/playerId";
 import { generateBoardWithMines } from "../utils/minesweeper";
 import { ThemeController } from "./ThemeController";
+import { Leaderboard } from "./Leaderboard";
 
 /**
  * Props for the GameLobby component
@@ -446,24 +447,35 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
                     </span>
                   </label>
 
-                  <div role="tablist" className="tabs tabs-boxed justify-center">
+                  <div
+                    role="tablist"
+                    className="tabs tabs-boxed justify-center"
+                  >
                     <button
                       role="tab"
-                      className={`tab ${difficulty === "beginner" ? "tab-active font-bold" : ""}`}
+                      className={`tab ${
+                        difficulty === "beginner" ? "tab-active font-bold" : ""
+                      }`}
                       onClick={() => setDifficulty("beginner")}
                     >
                       Beginner
                     </button>
                     <button
                       role="tab"
-                      className={`tab ${difficulty === "intermediate" ? "tab-active font-bold" : ""}`}
+                      className={`tab ${
+                        difficulty === "intermediate"
+                          ? "tab-active font-bold"
+                          : ""
+                      }`}
                       onClick={() => setDifficulty("intermediate")}
                     >
                       Intermediate
                     </button>
                     <button
                       role="tab"
-                      className={`tab ${difficulty === "expert" ? "tab-active font-bold" : ""}`}
+                      className={`tab ${
+                        difficulty === "expert" ? "tab-active font-bold" : ""
+                      }`}
                       onClick={() => setDifficulty("expert")}
                     >
                       Expert
@@ -514,74 +526,80 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
             </div>
           </div>
 
-          {/* Join Game Card */}
-          <div className="card bg-base-100 shadow-xl">
-            <div className="card-body">
-              <h2 className="card-title">
-                <FaUsers className="text-secondary" />
-                Join Existing Game
-              </h2>
-              <p className="text-base-content/70">
-                Enter a Game ID to join an opponent's game.
-              </p>
+          {/* Right Column: Join Game + Leaderboard */}
+          <div className="space-y-6">
+            {/* Join Game Card */}
+            <div className="card bg-base-100 shadow-xl">
+              <div className="card-body">
+                <h2 className="card-title">
+                  <FaUsers className="text-secondary" />
+                  Join Existing Game
+                </h2>
+                <p className="text-base-content/70">
+                  Enter a Game ID to join an opponent's game.
+                </p>
 
-              <div className="divider"></div>
+                <div className="divider"></div>
 
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Game ID</span>
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Enter Game ID..."
-                    className="input input-bordered flex-1 font-mono text-sm"
-                    value={joinGameId}
-                    onChange={(e) => setJoinGameId(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        handleJoinGame();
-                      }
-                    }}
-                  />
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Game ID</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter Game ID..."
+                      className="input input-bordered flex-1 font-mono text-sm"
+                      value={joinGameId}
+                      onChange={(e) => setJoinGameId(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handleJoinGame();
+                        }
+                      }}
+                    />
+                    <button
+                      className="btn btn-ghost btn-square"
+                      onClick={handlePasteGameId}
+                      title="Paste from clipboard"
+                    >
+                      <MdContentPaste size={20} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="card-actions justify-end mt-4">
                   <button
-                    className="btn btn-ghost btn-square"
-                    onClick={handlePasteGameId}
-                    title="Paste from clipboard"
+                    className="btn btn-secondary btn-block"
+                    onClick={handleJoinGame}
+                    disabled={isJoining || !joinGameId.trim()}
                   >
-                    <MdContentPaste size={20} />
+                    {isJoining && (
+                      <span className="loading loading-spinner"></span>
+                    )}
+                    Join Game
                   </button>
                 </div>
               </div>
+            </div>
 
-              <div className="card-actions justify-end mt-4">
-                <button
-                  className="btn btn-secondary btn-block"
-                  onClick={handleJoinGame}
-                  disabled={isJoining || !joinGameId.trim()}
-                >
-                  {isJoining && (
-                    <span className="loading loading-spinner"></span>
-                  )}
-                  Join Game
-                </button>
+            {/* How to Play */}
+            <div className="card bg-base-100 shadow-md">
+              <div className="card-body py-4">
+                <h3 className="font-semibold">How to Play:</h3>
+                <ul className="list-disc list-inside text-sm text-base-content/70 space-y-1">
+                  <li>Each turn: Place a mine, then reveal a cell</li>
+                  <li>Try to make your opponent reveal your mines</li>
+                  <li>If you reveal a mine, you lose!</li>
+                  <li>Use flags (right-click) to mark suspected mines</li>
+                </ul>
               </div>
             </div>
           </div>
         </div>
 
-        {/* How to Play */}
-        <div className="card bg-base-100 shadow-md">
-          <div className="card-body py-4">
-            <h3 className="font-semibold">How to Play:</h3>
-            <ul className="list-disc list-inside text-sm text-base-content/70 space-y-1">
-              <li>Each turn: Place a mine, then reveal a cell</li>
-              <li>Try to make your opponent reveal your mines</li>
-              <li>If you reveal a mine, you lose!</li>
-              <li>Use flags (right-click) to mark suspected mines</li>
-            </ul>
-          </div>
-        </div>
+        {/* Leaderboard */}
+        <Leaderboard />
       </div>
     </div>
   );
