@@ -58,20 +58,22 @@
 ### 5. Game Types and Interfaces
 
 - Create `src/types/game.ts` with TypeScript interfaces:
-- `Cell` type (has mine, revealed, flagged, adjacent mines count)
-- `GameState` type (board array, game status, turn info)
-- `Game` type (database record structure)
-- `Move` type (row, col, action)
+- `Cell` type (has mine with player attribution, revealed, flagged, adjacent mines count)
+- `GameState` type (board array, game status, turn info, turn phase)
+- `Game` type (database record structure matching schema: id, player1_id, player2_id, current_turn, turn_phase, game_state, status, winner, created_at, updated_at)
+- `Move` type (row, col, action: 'place_mine' | 'reveal_cell')
 
 ### 6. Minesweeper Game Logic
 
 - Create `src/utils/minesweeper.ts` with core game functions:
-- `generateBoard(rows, cols, mineCount)` - Generate board with random mine placement
+- `generateEmptyBoard(rows, cols)` - Generate empty board without mines
+- `placeMine(board, row, col, playerId)` - Place a mine on the board with player attribution
 - `revealCell(board, row, col)` - Reveal cell and cascade reveal adjacent cells that aren't bordered by mines
 - `toggleFlag(board, row, col)` - Toggle flag on cell
-- `checkWinCondition(board)` - Check if all non-mine bordered cells are revealed
-- `checkLoseCondition(board, row, col)` - Check if mine was revealed
+- `checkWinCondition(board, revealingPlayer)` - Check if opponent hit a mine (revealing player wins)
+- `checkLoseCondition(board, row, col)` - Check if mine was revealed (revealing player loses)
 - `countAdjacentMines(board, row, col)` - Count mines around a cell
+- `isValidMineePlacement(board, row, col)` - Validate mine placement (cell not revealed, not already has mine)
 
 ## React Components
 
@@ -79,11 +81,14 @@
 
 - Create `src/components/GameBoard.tsx`:
 - Render grid of cells
-- Handle left click (reveal) and right click (flag)
-- Display current turn indicator
+- Display current turn indicator and turn phase (place mine or reveal)
+- Handle mine placement click during 'place_mine' phase
+- Handle cell reveal click during 'reveal_cell' phase
+- Handle right click (flag) at any time
 - Show game status (waiting, active, finished)
 - Disable interactions when not player's turn
-- The Gameboard will present a different view depending on the player
+- Show phase-specific instructions ("Place your mine" or "Reveal a cell")
+- The Gameboard will present a different view depending on the player (hide opponent's mines)
 
 ### 8. Cell Component
 
@@ -117,8 +122,11 @@
 - Fetch initial game state from Supabase
 - Subscribe to real-time updates via `postgres_changes` event
 - Manage local game state
-- Provide `makeMove` function to update game
-- Handle turn switching logic
+- Provide `placeMine` function for placing mines
+- Provide `revealCell` function for revealing cells
+- Handle turn phase transitions (place_mine → reveal_cell → next player's turn)
+- Handle turn switching logic after reveal phase completes
+- Evaluate win/loss conditions after each reveal
 - Clean up subscriptions on unmount
 
 ### 12. Game Management Hook
@@ -161,11 +169,13 @@
 
 ### 16. Move Validation
 
-- Add client-side validation in `makeMove`:
+- Add client-side validation:
 - Check if it's player's turn
 - Validate cell coordinates
-- Prevent moves on already revealed cells
+- For `placeMine`: Check turn_phase is 'place_mine', cell not revealed, cell doesn't already have mine
+- For `revealCell`: Check turn_phase is 'reveal_cell', cell not already revealed
 - Prevent flagging revealed cells
+- Ensure actions match current turn phase
 
 ### 17. Error Handling
 
