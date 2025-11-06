@@ -250,6 +250,14 @@ export function useRealtimeGame(gameId: string | null) {
         return;
       }
 
+      // Check if cell is already revealed
+      const cell = board[row][col];
+      if (cell.revealed) {
+        console.error("Cell is already revealed");
+        setError("Cell is already revealed");
+        return;
+      }
+
       try {
         // Reveal cell
         const newBoard = revealCellUtil(board, row, col);
