@@ -3,6 +3,7 @@
  * Represents a single cell with various states: hidden, revealed, flagged, or containing a mine.
  */
 
+import { motion } from "framer-motion";
 import { FaBomb, FaFlag } from "react-icons/fa";
 import { MdQuestionMark } from "react-icons/md";
 import type { Cell as CellType } from "../types/game";
@@ -75,12 +76,24 @@ export function Cell({
   };
 
   const getCellContent = () => {
-    // If this is the losing cell, always show bomb icon with error color
+    // If this is the losing cell, show bomb icon with player color or error color
     if (isLosingCell) {
+      // Determine color based on who placed the mine
+      let mineColor = "text-error-content"; // Default error color for pre-placed mines
+      let mineTitle = "Losing mine";
+
+      if (cell.minePlacedBy === "player1") {
+        mineColor = "text-primary";
+        mineTitle = "Losing mine (Player 1)";
+      } else if (cell.minePlacedBy === "player2") {
+        mineColor = "text-secondary";
+        mineTitle = "Losing mine (Player 2)";
+      }
+
       return (
         <FaBomb
-          className="text-error-content"
-          title="Losing mine"
+          className={mineColor}
+          title={mineTitle}
           aria-label="This mine caused the game to end"
         />
       );
@@ -195,7 +208,7 @@ export function Cell({
   };
 
   return (
-    <div
+    <motion.div
       className={getCellClassName()}
       onClick={handleClick}
       onContextMenu={handleRightClick}
@@ -209,8 +222,18 @@ export function Cell({
           handleClick();
         }
       }}
+      whileHover={
+        !disabled && !cell.revealed
+          ? { scale: 1.05, transition: { duration: 0.2 } }
+          : undefined
+      }
+      whileTap={
+        !disabled ? { scale: 0.95, transition: { duration: 0.1 } } : undefined
+      }
+      initial={false}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
       {getCellContent()}
-    </div>
+    </motion.div>
   );
 }

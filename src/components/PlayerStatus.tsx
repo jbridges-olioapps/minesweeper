@@ -3,6 +3,7 @@
  * Shows turn indicators, player badges, and win/loss results.
  */
 
+import { motion, AnimatePresence } from "framer-motion";
 import { FaTrophy, FaUser, FaSkull } from "react-icons/fa";
 import { MdTimer } from "react-icons/md";
 import type { Game } from "../lib/supabase";
@@ -78,33 +79,58 @@ export function PlayerStatus({ game }: PlayerStatusProps) {
 
     if (isDraw) {
       return (
-        <div className="alert">
+        <motion.div
+          className="alert"
+          initial={{ opacity: 0, y: -20, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        >
           <MdTimer className="text-info" />
           <span>Game ended in a draw!</span>
-        </div>
+        </motion.div>
       );
     }
 
     if (isWinner) {
       return (
-        <div className="alert alert-success">
-          <FaTrophy className="text-success-content" />
+        <motion.div
+          className="alert alert-success"
+          initial={{ opacity: 0, y: -20, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        >
+          <motion.div
+            animate={{ rotate: [0, -10, 10, -10, 0], scale: [1, 1.2, 1] }}
+            transition={{ duration: 0.6, repeat: 2 }}
+          >
+            <FaTrophy className="text-success-content" />
+          </motion.div>
           <div>
             <h3 className="font-bold">Victory!</h3>
             <div className="text-sm">{getLossReasonText()}</div>
           </div>
-        </div>
+        </motion.div>
       );
     }
 
     return (
-      <div className="alert alert-error">
-        <FaSkull className="text-error-content" />
+      <motion.div
+        className="alert alert-error"
+        initial={{ opacity: 0, y: -20, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      >
+        <motion.div
+          animate={{ rotate: [0, 10, -10, 10, 0] }}
+          transition={{ duration: 0.5, repeat: 2 }}
+        >
+          <FaSkull className="text-error-content" />
+        </motion.div>
         <div>
           <h3 className="font-bold">Defeat</h3>
           <div className="text-sm">{getLossReasonText()}</div>
         </div>
-      </div>
+      </motion.div>
     );
   };
 
@@ -127,17 +153,29 @@ export function PlayerStatus({ game }: PlayerStatusProps) {
   return (
     <div className="space-y-4">
       {/* Game Result (if finished) */}
-      {game.status === "finished" && getGameResultMessage()}
+      <AnimatePresence>
+        {game.status === "finished" && getGameResultMessage()}
+      </AnimatePresence>
 
       {/* Player Status Cards */}
       <div className="grid grid-cols-2 gap-4">
         {/* Player 1 */}
-        <div
+        <motion.div
           className={`card bg-base-100 shadow-md ${
             game.current_turn === "player1" && game.status === "active"
               ? "ring-2 ring-primary"
               : ""
           }`}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{
+            opacity: 1,
+            x: 0,
+            scale:
+              game.current_turn === "player1" && game.status === "active"
+                ? 1.02
+                : 1,
+          }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
         >
           <div className="card-body p-4">
             <div className="flex items-center gap-2">
@@ -167,15 +205,25 @@ export function PlayerStatus({ game }: PlayerStatusProps) {
               )}
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Player 2 */}
-        <div
+        <motion.div
           className={`card bg-base-100 shadow-md ${
             game.current_turn === "player2" && game.status === "active"
               ? "ring-2 ring-primary"
               : ""
           }`}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{
+            opacity: 1,
+            x: 0,
+            scale:
+              game.current_turn === "player2" && game.status === "active"
+                ? 1.02
+                : 1,
+          }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
         >
           <div className="card-body p-4">
             <div className="flex items-center gap-2">
@@ -213,7 +261,7 @@ export function PlayerStatus({ game }: PlayerStatusProps) {
               )}
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Current Phase Indicator */}

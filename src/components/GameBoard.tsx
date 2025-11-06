@@ -245,17 +245,19 @@ export function GameBoard({
         </div>
       </div>
 
-      {/* Chat Component */}
-      <Chat
-        messages={messages}
-        playerRole={playerRole}
-        onSendMessage={handleSendMessage}
-        disabled={playerRole === "spectator"}
-        loading={chatLoading}
-      />
-
       {/* Toast Notifications */}
       <Toast toasts={toasts} onRemove={removeToast} />
+
+      {/* Chat Component - Fixed to bottom right */}
+      <div className="fixed bottom-4 right-4 z-50 w-96 max-w-[calc(100vw-2rem)]">
+        <Chat
+          messages={messages}
+          playerRole={playerRole}
+          onSendMessage={handleSendMessage}
+          disabled={playerRole === "spectator"}
+          loading={chatLoading}
+        />
+      </div>
     </div>
   );
 }
