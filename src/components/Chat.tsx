@@ -6,7 +6,6 @@
 import { useState, useRef, useEffect } from "react";
 import { FaPaperPlane, FaComment } from "react-icons/fa";
 import type { Message } from "../lib/supabase";
-import type { PlayerTurn } from "../types/game";
 
 /**
  * Props for the Chat component
