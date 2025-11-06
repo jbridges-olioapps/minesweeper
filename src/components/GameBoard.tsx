@@ -6,7 +6,9 @@
 import type { Game } from "../lib/supabase";
 import type { Board, GameStatus, TurnPhase } from "../types/game";
 import { getPlayerRole } from "../utils/playerId";
+import { useToast } from "../hooks/useToast";
 import { Cell } from "./Cell";
+import { Toast } from "./Toast";
 
 /**
  * Props for the GameBoard component
@@ -45,12 +47,8 @@ export function GameBoard({
   onCellRightClick,
   disabled = false,
 }: GameBoardProps) {
+  const { toasts, showToast, removeToast } = useToast();
   const playerRole = getPlayerRole(game);
-  console.log("🎮 GameBoard playerRole:", {
-    playerRole,
-    player1_id: game.player1_id,
-    player2_id: game.player2_id,
-  });
   const isMyTurn =
     playerRole !== "spectator" && game.current_turn === playerRole;
   const turnPhase = game.turn_phase as TurnPhase | null;
@@ -58,6 +56,20 @@ export function GameBoard({
 
   const handleCellClick = (row: number, col: number) => {
     if (disabled || !isMyTurn || status !== "active") return;
+
+    // During place_mine phase, don't allow clicking revealed cells or cells with mines
+    if (turnPhase === "place_mine") {
+      const cell = board[row][col];
+      if (cell.revealed) {
+        showToast("Can't place mine in revealed cell", "warning");
+        return;
+      }
+      if (cell.hasMine) {
+        showToast("Cell already has a mine", "warning");
+        return;
+      }
+    }
+
     onCellClick(row, col);
   };
 
@@ -199,6 +211,9 @@ export function GameBoard({
           </div>
         </div>
       </div>
+
+      {/* Toast Notifications */}
+      <Toast toasts={toasts} onRemove={removeToast} />
     </div>
   );
 }

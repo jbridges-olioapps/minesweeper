@@ -14,6 +14,7 @@ import {
   checkWinCondition,
   checkLoseCondition,
   countMinesByPlayer,
+  isValidMinePlacement,
 } from "../utils/minesweeper";
 import { getPlayerRole, getPlayerId } from "../utils/playerId";
 
@@ -135,6 +136,14 @@ export function useRealtimeGame(gameId: string | null) {
 
       if (game.turn_phase !== "place_mine") {
         console.error("Not in place_mine phase");
+        return;
+      }
+
+      // Validate mine placement
+      const validation = isValidMinePlacement(board, row, col);
+      if (!validation.isValid) {
+        console.error("Invalid mine placement:", validation.error);
+        setError(validation.error || "Cannot place mine here");
         return;
       }
 

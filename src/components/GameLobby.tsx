@@ -9,7 +9,7 @@ import { MdContentPaste } from "react-icons/md";
 import { supabase } from "../lib/supabase";
 import type { Game } from "../lib/supabase";
 import { getPlayerId } from "../utils/playerId";
-import { generateEmptyBoard } from "../utils/minesweeper";
+import { generateBoardWithMines } from "../utils/minesweeper";
 
 /**
  * Props for the GameLobby component
@@ -40,6 +40,11 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
   const [error, setError] = useState<string | null>(null);
   const [createdGameId, setCreatedGameId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Board configuration
+  const [rows, setRows] = useState(10);
+  const [cols, setCols] = useState(10);
+  const [initialMines, setInitialMines] = useState(10);
 
   const playerId = getPlayerId();
 
@@ -108,8 +113,18 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
     setError(null);
 
     try {
-      // Create an empty board (8x8 by default)
-      const board = generateEmptyBoard(8, 8);
+      // Validate configuration
+      const maxMines = rows * cols - 1; // Leave at least one cell free
+      if (initialMines > maxMines) {
+        setError(
+          `Too many mines! Maximum for ${rows}x${cols} board is ${maxMines}`
+        );
+        setIsCreating(false);
+        return;
+      }
+
+      // Generate board with random initial mines
+      const board = generateBoardWithMines(rows, cols, initialMines);
 
       // Create game in database
       const { data, error: createError } = await supabase
@@ -121,8 +136,8 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
           turn_phase: "place_mine",
           game_state: {
             board,
-            rows: 8,
-            cols: 8,
+            rows,
+            cols,
             minesPlacedByPlayer1: 0,
             minesPlacedByPlayer2: 0,
           } as any,
@@ -361,6 +376,84 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
               <p className="text-base-content/70">
                 Start a new game and invite a friend to join.
               </p>
+
+              <div className="divider"></div>
+
+              {/* Board Configuration */}
+              <div className="space-y-4">
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Board Rows</span>
+                    <span className="label-text-alt text-base-content/60">
+                      {rows}
+                    </span>
+                  </label>
+                  <input
+                    type="range"
+                    min="5"
+                    max="20"
+                    value={rows}
+                    onChange={(e) => setRows(Number(e.target.value))}
+                    className="range range-primary range-sm"
+                  />
+                </div>
+
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Board Columns</span>
+                    <span className="label-text-alt text-base-content/60">
+                      {cols}
+                    </span>
+                  </label>
+                  <input
+                    type="range"
+                    min="5"
+                    max="20"
+                    value={cols}
+                    onChange={(e) => setCols(Number(e.target.value))}
+                    className="range range-primary range-sm"
+                  />
+                </div>
+
+                <div className="form-control">
+                  <label className="label">
+                    <span className="label-text">Initial Mines</span>
+                    <span className="label-text-alt text-base-content/60">
+                      {initialMines}
+                    </span>
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max={Math.floor((rows * cols) / 3)}
+                    value={initialMines}
+                    onChange={(e) => setInitialMines(Number(e.target.value))}
+                    className="range range-primary range-sm"
+                  />
+                  <label className="label">
+                    <span className="label-text-alt">
+                      Pre-placed random mines on the board
+                    </span>
+                  </label>
+                </div>
+
+                <div className="stats stats-vertical lg:stats-horizontal shadow bg-base-200 w-full">
+                  <div className="stat py-2">
+                    <div className="stat-title text-xs">Board Size</div>
+                    <div className="stat-value text-lg">
+                      {rows}×{cols}
+                    </div>
+                  </div>
+                  <div className="stat py-2">
+                    <div className="stat-title text-xs">Total Cells</div>
+                    <div className="stat-value text-lg">{rows * cols}</div>
+                  </div>
+                  <div className="stat py-2">
+                    <div className="stat-title text-xs">Initial Mines</div>
+                    <div className="stat-value text-lg">{initialMines}</div>
+                  </div>
+                </div>
+              </div>
 
               <div className="divider"></div>
 

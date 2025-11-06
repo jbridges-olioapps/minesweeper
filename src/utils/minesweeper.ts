@@ -34,6 +34,54 @@ export function generateEmptyBoard(rows: number, cols: number): Board {
 }
 
 /**
+ * Generate a board with random initial mines pre-placed.
+ * These mines have no player attribution (minePlacedBy: null).
+ *
+ * @param rows - Number of rows in the board
+ * @param cols - Number of columns in the board
+ * @param initialMines - Number of mines to randomly place
+ * @returns A 2D array with randomly placed mines
+ */
+export function generateBoardWithMines(
+  rows: number,
+  cols: number,
+  initialMines: number
+): Board {
+  // Start with an empty board
+  let board = generateEmptyBoard(rows, cols);
+
+  // Calculate max possible mines (can't exceed total cells)
+  const totalCells = rows * cols;
+  const minesToPlace = Math.min(initialMines, totalCells);
+
+  // Create array of all possible positions
+  const positions: Array<{ row: number; col: number }> = [];
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      positions.push({ row, col });
+    }
+  }
+
+  // Shuffle positions using Fisher-Yates algorithm
+  for (let i = positions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [positions[i], positions[j]] = [positions[j], positions[i]];
+  }
+
+  // Place mines at the first N shuffled positions
+  for (let i = 0; i < minesToPlace; i++) {
+    const { row, col } = positions[i];
+    board[row][col].hasMine = true;
+    board[row][col].minePlacedBy = null; // Pre-placed mines have no attribution
+  }
+
+  // Recalculate all adjacent mine counts
+  board = recalculateAdjacentMines(board);
+
+  return board;
+}
+
+/**
  * Place a mine on the board with player attribution
  */
 export function placeMine(
@@ -249,24 +297,33 @@ export function checkLoseCondition(
 }
 
 /**
- * Check win condition - if opponent hit a mine, revealing player wins
+ * Check win condition - if a mine is revealed, the revealing player loses
+ *
+ * Win conditions:
+ * - If ANY mine is revealed, the revealing player loses and opponent wins
+ * - Works for both player-placed mines and pre-placed mines
+ *
+ * @param board - The game board
+ * @param revealingPlayer - The player who just revealed a cell
+ * @returns GameResult indicating if game is over and who won
  */
 export function checkWinCondition(
   board: Board,
-  _revealingPlayer: PlayerTurn
+  revealingPlayer: PlayerTurn
 ): GameResult {
   // Check all revealed cells for mines
   for (let row = 0; row < board.length; row++) {
     for (let col = 0; col < board[row].length; col++) {
       const cell = board[row][col];
 
-      // If a revealed cell has a mine, the player who placed it wins
-      if (cell.revealed && cell.hasMine && cell.minePlacedBy) {
-        // The player who placed the mine wins
-        // The player who revealed it loses
+      // If a revealed cell has a mine, the revealing player loses
+      if (cell.revealed && cell.hasMine) {
+        // The opponent wins (the player who did NOT reveal)
+        const opponent: PlayerTurn =
+          revealingPlayer === "player1" ? "player2" : "player1";
         return {
           isGameOver: true,
-          winner: cell.minePlacedBy,
+          winner: opponent,
           reason: "mine_revealed",
         };
       }

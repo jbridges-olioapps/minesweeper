@@ -70,24 +70,14 @@ export function Cell({
 
   const getCellContent = () => {
     // Show flag if cell is flagged AND it belongs to the current player
-    if (cell.flagged) {
-      const shouldShowFlag = cell.flagPlacedBy === playerRole;
-      console.log(`🚩 Cell[${row}][${col}] flagged:`, {
-        flagged: cell.flagged,
-        flagPlacedBy: cell.flagPlacedBy,
-        playerRole: playerRole,
-        shouldShowFlag: shouldShowFlag,
-      });
-
-      if (shouldShowFlag) {
-        return (
-          <FaFlag
-            className="text-warning"
-            title="Flagged"
-            aria-label="Flagged cell"
-          />
-        );
-      }
+    if (cell.flagged && cell.flagPlacedBy === playerRole) {
+      return (
+        <FaFlag
+          className="text-warning"
+          title="Flagged"
+          aria-label="Flagged cell"
+        />
+      );
     }
 
     // If cell is not revealed, show empty or question mark
@@ -142,10 +132,6 @@ export function Cell({
       classes.push("cell-hidden");
       // Only show flag styling if the flag belongs to the current player
       if (cell.flagged && cell.flagPlacedBy === playerRole) {
-        console.log(`🎨 Cell[${row}][${col}] adding cell-flagged class:`, {
-          flagPlacedBy: cell.flagPlacedBy,
-          playerRole: playerRole,
-        });
         classes.push("cell-flagged");
       }
     }
