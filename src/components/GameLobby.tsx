@@ -3,7 +3,7 @@
  * Handles game creation, game ID sharing, and joining existing games.
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaCopy, FaCheck, FaGamepad, FaUsers } from "react-icons/fa";
 import { MdContentPaste } from "react-icons/md";
 import { supabase } from "../lib/supabase";
@@ -42,6 +42,39 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
   const [copied, setCopied] = useState(false);
 
   const playerId = getPlayerId();
+
+  /**
+   * Subscribe to game updates when waiting for player 2 to join
+   */
+  useEffect(() => {
+    if (!createdGameId) return;
+
+    // Subscribe to game updates
+    const channel = supabase
+      .channel(`game:${createdGameId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "games",
+          filter: `id=eq.${createdGameId}`,
+        },
+        (payload) => {
+          const updatedGame = payload.new as Game;
+
+          // When player 2 joins, the game becomes active
+          if (updatedGame.status === "active" && updatedGame.player2_id) {
+            onGameJoined(updatedGame);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [createdGameId, onGameJoined]);
 
   const handleCreateGame = async () => {
     setIsCreating(true);
