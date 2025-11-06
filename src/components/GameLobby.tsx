@@ -47,11 +47,16 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
    * Subscribe to game updates when waiting for player 2 to join
    */
   useEffect(() => {
-    if (!createdGameId) return;
+    if (!createdGameId) {
+      console.log("[GameLobby] No createdGameId, skipping subscription");
+      return;
+    }
+
+    console.log("[GameLobby] Setting up subscription for game:", createdGameId);
 
     // Subscribe to game updates
     const channel = supabase
-      .channel(`game:${createdGameId}`)
+      .channel(`game-lobby:${createdGameId}`)
       .on(
         "postgres_changes",
         {
@@ -61,17 +66,39 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
           filter: `id=eq.${createdGameId}`,
         },
         (payload) => {
+          console.log("[GameLobby] Received postgres_changes event:", payload);
           const updatedGame = payload.new as Game;
+
+          console.log("[GameLobby] Updated game state:", {
+            status: updatedGame.status,
+            player2_id: updatedGame.player2_id,
+            hasPlayer2: !!updatedGame.player2_id,
+          });
 
           // When player 2 joins, the game becomes active
           if (updatedGame.status === "active" && updatedGame.player2_id) {
+            console.log("[GameLobby] Player 2 joined! Redirecting to game...");
             onGameJoined(updatedGame);
+          } else {
+            console.log("[GameLobby] Game not ready yet:", {
+              statusActive: updatedGame.status === "active",
+              hasPlayer2: !!updatedGame.player2_id,
+            });
           }
         }
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        console.log("[GameLobby] Subscription status:", status);
+        if (err) {
+          console.error("[GameLobby] Subscription error:", err);
+        }
+      });
 
     return () => {
+      console.log(
+        "[GameLobby] Cleaning up subscription for game:",
+        createdGameId
+      );
       supabase.removeChannel(channel);
     };
   }, [createdGameId, onGameJoined]);
@@ -125,22 +152,37 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
       return;
     }
 
+    console.log(
+      "[GameLobby] Player 2 attempting to join game:",
+      joinGameId.trim()
+    );
     setIsJoining(true);
     setError(null);
 
     try {
       // Fetch the game
+      console.log("[GameLobby] Fetching game details...");
       const { data: game, error: fetchError } = await supabase
         .from("games")
         .select()
         .eq("id", joinGameId.trim())
         .single();
 
-      if (fetchError) throw fetchError;
+      if (fetchError) {
+        console.error("[GameLobby] Error fetching game:", fetchError);
+        throw fetchError;
+      }
 
       if (!game) {
         throw new Error("Game not found");
       }
+
+      console.log("[GameLobby] Found game:", {
+        id: game.id,
+        status: game.status,
+        player1_id: game.player1_id,
+        player2_id: game.player2_id,
+      });
 
       // Check if game is available to join
       if (game.status !== "waiting") {
@@ -156,6 +198,7 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
       }
 
       // Join the game
+      console.log("[GameLobby] Updating game to add player 2...");
       const { data: updatedGame, error: updateError } = await supabase
         .from("games")
         .update({
@@ -166,13 +209,19 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
         .select()
         .single();
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error("[GameLobby] Error updating game:", updateError);
+        throw updateError;
+      }
+
+      console.log("[GameLobby] Successfully joined game:", updatedGame);
 
       if (updatedGame) {
+        console.log("[GameLobby] Calling onGameJoined for player 2");
         onGameJoined(updatedGame);
       }
     } catch (err) {
-      console.error("Error joining game:", err);
+      console.error("[GameLobby] Error joining game:", err);
       setError(err instanceof Error ? err.message : "Failed to join game");
     } finally {
       setIsJoining(false);
