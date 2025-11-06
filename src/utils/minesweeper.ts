@@ -1,4 +1,4 @@
-import type { Board, Cell, PlayerTurn, GameResult } from "../types/game";
+import type { Board, PlayerTurn, GameResult } from "../types/game";
 
 /**
  * Generate an empty board without any mines
@@ -219,7 +219,7 @@ export function checkLoseCondition(
  */
 export function checkWinCondition(
   board: Board,
-  revealingPlayer: PlayerTurn
+  _revealingPlayer: PlayerTurn
 ): GameResult {
   // Check all revealed cells for mines
   for (let row = 0; row < board.length; row++) {
