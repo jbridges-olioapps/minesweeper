@@ -99,6 +99,20 @@ pnpm dev
 pnpm build
 ```
 
+### Test Supabase Connection
+
+Verify your Supabase connection is working:
+
+```bash
+pnpm test:supabase
+```
+
+This will:
+- ✅ Check that your environment variables are loaded
+- ✅ Test the connection to Supabase
+- ✅ Verify your API key is valid
+- ⚠️ Note: The `games` table warning is expected if you haven't created the schema yet
+
 ## Deployment to GitHub Pages
 
 ### Prerequisites
