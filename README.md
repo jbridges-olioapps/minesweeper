@@ -71,6 +71,64 @@ export default defineConfig([
   },
 ])
 ```
-# minesweeper
-# minesweeper
-# minesweeper
+# Multiplayer Minesweeper
+
+A multiplayer Minesweeper game built with React, TypeScript, and Supabase.
+
+## Setup
+
+### Environment Variables
+
+Create a `.env` file in the root directory with your Supabase credentials:
+
+```
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### Development
+
+```bash
+pnpm install
+pnpm dev
+```
+
+### Build
+
+```bash
+pnpm build
+```
+
+## Deployment to GitHub Pages
+
+### Prerequisites
+
+1. Repository is already set up on GitHub
+2. You have push access to the repository
+
+### Step 1: Configure GitHub Secrets
+
+1. Go to your repository on GitHub
+2. Navigate to **Settings** → **Secrets and variables** → **Actions**
+3. Click **New repository secret**
+4. Add the following secrets:
+   - **Name**: `VITE_SUPABASE_URL`
+     - **Value**: Your Supabase project URL (from your `.env` file)
+   - **Name**: `VITE_SUPABASE_ANON_KEY`
+     - **Value**: Your Supabase anon key (from your `.env` file)
+
+### Step 2: Enable GitHub Pages
+
+1. Go to **Settings** → **Pages**
+2. Under **Source**, select **GitHub Actions** as the source
+3. The workflow will automatically deploy when you push to the `main` branch
+
+### Step 3: Deploy
+
+The GitHub Actions workflow (`.github/workflows/deploy.yml`) will automatically:
+- Build the project with your Supabase credentials
+- Deploy the `dist/` folder to GitHub Pages
+
+Simply push to the `main` branch or manually trigger the workflow from the **Actions** tab.
+
+**Note**: The Supabase credentials are baked into the build at compile time. This is expected and safe - the anon key is meant to be public, and Supabase protects your data via Row Level Security (RLS) policies.
