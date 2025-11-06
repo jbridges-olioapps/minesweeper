@@ -191,6 +191,7 @@ export function GameBoard({
               playerRole={playerRole}
               disabled={isCellDisabled()}
               isLosingCell={isLosingCell(rowIndex, colIndex)}
+              gameStatus={status}
               onClick={handleCellClick}
               onRightClick={handleCellRightClick}
             />

@@ -29,6 +29,8 @@ interface CellProps {
   disabled: boolean;
   /** Whether this cell caused the game to end (losing cell) */
   isLosingCell: boolean;
+  /** Current game status */
+  gameStatus: "waiting" | "active" | "finished";
   /** Callback when cell is left-clicked */
   onClick: (row: number, col: number) => void;
   /** Callback when cell is right-clicked (for flagging) */
@@ -57,6 +59,7 @@ export function Cell({
   playerRole,
   disabled,
   isLosingCell,
+  gameStatus,
   onClick,
   onRightClick,
 }: CellProps) {
@@ -83,8 +86,35 @@ export function Cell({
       );
     }
 
-    // Show flag if cell is flagged AND it belongs to the current player
-    if (cell.flagged && cell.flagPlacedBy === playerRole) {
+    // If game is finished, show all mines with appropriate colors
+    if (gameStatus === "finished" && cell.hasMine && !isLosingCell) {
+      // Determine mine color based on who placed it
+      let mineColor = "text-base-content"; // Default black for pre-placed mines
+      let mineTitle = "Pre-placed mine";
+
+      if (cell.minePlacedBy === "player1") {
+        mineColor = "text-primary";
+        mineTitle = "Player 1's mine";
+      } else if (cell.minePlacedBy === "player2") {
+        mineColor = "text-secondary";
+        mineTitle = "Player 2's mine";
+      }
+
+      return (
+        <FaBomb
+          className={mineColor}
+          title={mineTitle}
+          aria-label={mineTitle}
+        />
+      );
+    }
+
+    // Show flag if cell is flagged AND it belongs to the current player (only during active game)
+    if (
+      gameStatus !== "finished" &&
+      cell.flagged &&
+      cell.flagPlacedBy === playerRole
+    ) {
       return (
         <FaFlag
           className="text-warning"
