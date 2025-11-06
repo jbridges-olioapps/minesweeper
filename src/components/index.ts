@@ -6,3 +6,4 @@ export * from "./Toast";
 export * from "./Chat";
 export * from "./Leaderboard";
 export * from "./ThemeController";
+export * from "./LossAnimation";

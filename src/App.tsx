@@ -1,18 +1,82 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { GameBoard } from "./components/GameBoard";
 import { GameLobby } from "./components/GameLobby";
 import { PlayerStatus } from "./components/PlayerStatus";
 import { ThemeController } from "./components/ThemeController";
+import { LossAnimation } from "./components/LossAnimation";
 import { useRealtimeGame } from "./hooks/useRealtimeGame";
 import type { Game } from "./lib/supabase";
+import type { GameState } from "./types/game";
 import "./App.css";
 
 function App() {
   const [gameId, setGameId] = useState<string | null>(null);
+  const [showLossAnimation, setShowLossAnimation] = useState(false);
+  const hasShownAnimationRef = useRef<string | null>(null);
 
   // Use the real-time game hook
   const { game, board, loading, error, placeMine, revealCell, toggleFlag } =
     useRealtimeGame(gameId);
+
+  // Check if we should show the loss animation
+  useEffect(() => {
+    if (!game || game.status !== "finished" || !game.winner) {
+      setShowLossAnimation(false);
+      return;
+    }
+
+    const gameState = game.game_state as unknown as GameState | undefined;
+    const losingCell = gameState?.losingCell;
+    const lossReason = gameState?.lossReason;
+
+    // Show animation if there's a losing cell (mine was revealed or placed on)
+    // This covers both system-generated mines and player-placed mines
+    if (losingCell && (lossReason === "revealed_mine" || lossReason === "placed_on_mine")) {
+      // Create a unique key for this loss event
+      const lossKey = `${game.id}-${losingCell.row}-${losingCell.col}`;
+      
+      // Only show if we haven't shown this specific loss animation yet
+      if (hasShownAnimationRef.current !== lossKey) {
+        hasShownAnimationRef.current = lossKey;
+        setShowLossAnimation(true);
+      }
+    } else if (losingCell && game.winner) {
+      // Fallback: if there's a losing cell and a winner, show animation
+      // (covers cases where lossReason might not be set, including system-generated mines)
+      const lossKey = `${game.id}-${losingCell.row}-${losingCell.col}`;
+      
+      if (hasShownAnimationRef.current !== lossKey) {
+        hasShownAnimationRef.current = lossKey;
+        setShowLossAnimation(true);
+      }
+    } else if (game.winner && board) {
+      // Additional fallback: check board for revealed mines
+      // Find the first revealed mine (this should be the losing cell)
+      for (let row = 0; row < board.length; row++) {
+        for (let col = 0; col < board[row].length; col++) {
+          const cell = board[row][col];
+          if (cell.revealed && cell.hasMine) {
+            const lossKey = `${game.id}-${row}-${col}`;
+            if (hasShownAnimationRef.current !== lossKey) {
+              hasShownAnimationRef.current = lossKey;
+              setShowLossAnimation(true);
+              return;
+            }
+          }
+        }
+      }
+      setShowLossAnimation(false);
+    } else {
+      setShowLossAnimation(false);
+    }
+  }, [game, board]);
+
+  // Determine which player lost
+  const losingPlayer = game?.winner
+    ? game.winner === "player1"
+      ? ("player2" as const)
+      : ("player1" as const)
+    : undefined;
 
   const handleGameJoined = (joinedGame: Game) => {
     setGameId(joinedGame.id);
@@ -79,6 +143,13 @@ function App() {
   // Show game board
   return (
     <div className="min-h-screen bg-base-300">
+      {/* Loss Animation Overlay */}
+      <LossAnimation
+        show={showLossAnimation}
+        losingPlayer={losingPlayer}
+        onComplete={() => setShowLossAnimation(false)}
+      />
+
       <div className="container mx-auto py-8 px-4">
         <div className="relative">
           <div className="absolute top-0 right-0">

@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 
 const THEME_STORAGE_KEY = "minesweeper-theme";
-const DEFAULT_THEME = "synthwave";
+const DEFAULT_THEME = "light";
 
 /**
  * ThemeController component - Dropdown menu for switching themes.

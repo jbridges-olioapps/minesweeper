@@ -150,29 +150,35 @@ export function Chat({
 
   return (
     <motion.div
-      className="card bg-base-100 shadow-2xl w-full"
-      initial={{ opacity: 0, y: 50, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      className={`card bg-base-100 shadow-2xl ${isMinimized ? "w-auto" : "w-full"}`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
     >
-      <div className="card-body p-4">
+      <motion.div
+        className="card-body"
+        animate={{
+          padding: isMinimized ? "0.25rem" : "1rem",
+        }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
+        <div className={`flex items-center justify-between ${isMinimized ? "" : "mb-2"}`}>
+          <div className={`flex items-center ${isMinimized ? "gap-1" : "gap-2"}`}>
             <motion.div
               animate={{ rotate: isMinimized ? 0 : [0, 10, -10, 0] }}
               transition={{ duration: 0.5 }}
             >
-              <FaComment className="text-primary" />
+              <FaComment className={`text-primary ${isMinimized ? "text-xs" : ""}`} />
             </motion.div>
             <h3 className="font-semibold text-sm">Game Chat</h3>
-            {disabled && (
+            {!isMinimized && disabled && (
               <span className="badge badge-ghost badge-sm">Spectator</span>
             )}
             <AnimatePresence>
               {isMinimized && unreadCount > 0 && (
                 <motion.span
-                  className="badge badge-primary badge-sm"
+                  className="badge badge-primary badge-xs"
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   exit={{ scale: 0 }}
@@ -184,12 +190,12 @@ export function Chat({
           </div>
           <motion.button
             onClick={toggleMinimize}
-            className="btn btn-ghost btn-xs btn-circle"
+            className={`btn btn-ghost btn-circle ${isMinimized ? "btn-xs" : "btn-xs"}`}
             aria-label={isMinimized ? "Expand chat" : "Minimize chat"}
             whileHover={{ scale: 1.1, rotate: 90 }}
             whileTap={{ scale: 0.9 }}
           >
-            {isMinimized ? <FaPlus /> : <FaMinus />}
+            {isMinimized ? <FaPlus className="text-xs" /> : <FaMinus />}
           </motion.button>
         </div>
 
@@ -299,7 +305,7 @@ export function Chat({
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
     </motion.div>
   );
 }

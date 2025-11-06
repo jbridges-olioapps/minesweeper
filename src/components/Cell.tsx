@@ -279,11 +279,11 @@ export function Cell({
       }}
       whileHover={
         !disabled && !cell.revealed
-          ? { scale: 1.05, transition: { duration: 0.2 } }
+          ? { scale: 0.95, transition: { duration: 0.2 } }
           : undefined
       }
       whileTap={
-        !disabled ? { scale: 0.95, transition: { duration: 0.1 } } : undefined
+        !disabled ? { scale: 0.90, transition: { duration: 0.1 } } : undefined
       }
       initial={false}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
