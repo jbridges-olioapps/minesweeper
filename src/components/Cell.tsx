@@ -23,6 +23,8 @@ interface CellProps {
   turnPhase: "place_mine" | "reveal_cell" | null;
   /** Whether the mine in this cell belongs to the current player */
   isMyMine: boolean;
+  /** The current player's role (player1, player2, or spectator) */
+  playerRole: "player1" | "player2" | "spectator";
   /** Whether cell interactions are disabled */
   disabled: boolean;
   /** Callback when cell is left-clicked */
@@ -50,6 +52,7 @@ export function Cell({
   isMyTurn,
   turnPhase,
   isMyMine,
+  playerRole,
   disabled,
   onClick,
   onRightClick,
@@ -66,8 +69,8 @@ export function Cell({
   };
 
   const getCellContent = () => {
-    // Show flag if cell is flagged
-    if (cell.flagged) {
+    // Show flag if cell is flagged AND it belongs to the current player
+    if (cell.flagged && cell.flagPlacedBy === playerRole) {
       return (
         <FaFlag
           className="text-warning"

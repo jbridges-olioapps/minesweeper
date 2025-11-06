@@ -24,6 +24,7 @@ export function generateEmptyBoard(rows: number, cols: number): Board {
         minePlacedBy: null,
         revealed: false,
         flagged: false,
+        flagPlacedBy: null,
         adjacentMines: 0,
       };
     }
@@ -153,15 +154,38 @@ export function revealCell(board: Board, row: number, col: number): Board {
 }
 
 /**
- * Toggle flag on a cell
+ * Toggle flag on a cell with player attribution
+ *
+ * @param board - The current game board
+ * @param row - Row index of the cell
+ * @param col - Column index of the cell
+ * @param playerId - The player placing/removing the flag
+ * @returns Updated board with flag toggled
  */
-export function toggleFlag(board: Board, row: number, col: number): Board {
+export function toggleFlag(
+  board: Board,
+  row: number,
+  col: number,
+  playerId: PlayerTurn
+): Board {
   // Create a deep copy of the board
   const newBoard = board.map((r) => r.map((cell) => ({ ...cell })));
 
   // Don't allow flagging revealed cells
   if (!newBoard[row][col].revealed) {
-    newBoard[row][col].flagged = !newBoard[row][col].flagged;
+    const cell = newBoard[row][col];
+
+    if (cell.flagged) {
+      // Remove flag (only if it belongs to this player)
+      if (cell.flagPlacedBy === playerId) {
+        cell.flagged = false;
+        cell.flagPlacedBy = null;
+      }
+    } else {
+      // Place flag
+      cell.flagged = true;
+      cell.flagPlacedBy = playerId;
+    }
   }
 
   return newBoard;

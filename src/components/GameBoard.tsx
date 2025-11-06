@@ -164,6 +164,7 @@ export function GameBoard({
               isMyTurn={isMyTurn}
               turnPhase={turnPhase}
               isMyMine={isMyMine(rowIndex, colIndex)}
+              playerRole={playerRole}
               disabled={isCellDisabled()}
               onClick={handleCellClick}
               onRightClick={handleCellRightClick}

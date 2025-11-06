@@ -15,6 +15,8 @@ export interface Cell {
   revealed: boolean;
   /** Whether this cell has been flagged */
   flagged: boolean;
+  /** ID of the player who placed the flag (if any) */
+  flagPlacedBy: "player1" | "player2" | null;
   /** Number of adjacent cells that contain mines */
   adjacentMines: number;
 }

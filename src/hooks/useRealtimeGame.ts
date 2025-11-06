@@ -283,8 +283,13 @@ export function useRealtimeGame(gameId: string | null) {
       }
 
       try {
-        // Toggle flag
-        const newBoard = toggleFlagUtil(board, row, col);
+        // Toggle flag with player attribution
+        const newBoard = toggleFlagUtil(
+          board,
+          row,
+          col,
+          playerRole as PlayerTurn
+        );
 
         // Update game state (don't change turn/phase for flagging)
         const { error: updateError } = await supabase
