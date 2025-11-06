@@ -401,7 +401,7 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
                     </span>
                   </label>
 
-                  <div className="space-y-3">
+                  <div className="flex flex-col gap-3">
                     {/* Beginner */}
                     <label className="label cursor-pointer justify-start gap-3 hover:bg-base-200 p-3 rounded-lg transition-colors">
                       <input
@@ -415,9 +415,6 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
                         <span className="label-text font-semibold">
                           Beginner
                         </span>
-                        <p className="text-xs text-base-content/60">
-                          8×8 grid with 10 mines
-                        </p>
                       </div>
                     </label>
 
@@ -434,9 +431,6 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
                         <span className="label-text font-semibold">
                           Intermediate
                         </span>
-                        <p className="text-xs text-base-content/60">
-                          16×16 grid with 40 mines
-                        </p>
                       </div>
                     </label>
 
@@ -451,9 +445,6 @@ export function GameLobby({ onGameJoined }: GameLobbyProps) {
                       />
                       <div className="flex-1">
                         <span className="label-text font-semibold">Expert</span>
-                        <p className="text-xs text-base-content/60">
-                          30×16 grid with 99 mines
-                        </p>
                       </div>
                     </label>
                   </div>

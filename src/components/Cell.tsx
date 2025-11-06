@@ -27,6 +27,8 @@ interface CellProps {
   playerRole: "player1" | "player2" | "spectator";
   /** Whether cell interactions are disabled */
   disabled: boolean;
+  /** Whether this cell caused the game to end (losing cell) */
+  isLosingCell: boolean;
   /** Callback when cell is left-clicked */
   onClick: (row: number, col: number) => void;
   /** Callback when cell is right-clicked (for flagging) */
@@ -54,6 +56,7 @@ export function Cell({
   isMyMine,
   playerRole,
   disabled,
+  isLosingCell,
   onClick,
   onRightClick,
 }: CellProps) {
@@ -69,6 +72,17 @@ export function Cell({
   };
 
   const getCellContent = () => {
+    // If this is the losing cell, always show bomb icon with error color
+    if (isLosingCell) {
+      return (
+        <FaBomb
+          className="text-error-content"
+          title="Losing mine"
+          aria-label="This mine caused the game to end"
+        />
+      );
+    }
+
     // Show flag if cell is flagged AND it belongs to the current player
     if (cell.flagged && cell.flagPlacedBy === playerRole) {
       return (
@@ -120,6 +134,12 @@ export function Cell({
 
   const getCellClassName = () => {
     const classes = ["cell"];
+
+    // Losing cell gets special styling (overrides other states)
+    if (isLosingCell) {
+      classes.push("cell-losing");
+      return classes.join(" ");
+    }
 
     // Revealed state
     if (cell.revealed) {

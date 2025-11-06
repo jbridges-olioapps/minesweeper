@@ -54,6 +54,12 @@ export function GameBoard({
   const turnPhase = game.turn_phase as TurnPhase | null;
   const status = game.status as GameStatus;
 
+  // Get losing cell coordinates from game state
+  const gameState = game.game_state as any;
+  const losingCell = gameState?.losingCell as
+    | { row: number; col: number }
+    | undefined;
+
   const handleCellClick = (row: number, col: number) => {
     if (disabled || !isMyTurn || status !== "active") return;
 
@@ -82,6 +88,10 @@ export function GameBoard({
   const isMyMine = (row: number, col: number) => {
     const cell = board[row][col];
     return playerRole !== "spectator" && cell.minePlacedBy === playerRole;
+  };
+
+  const isLosingCell = (row: number, col: number) => {
+    return losingCell?.row === row && losingCell?.col === col;
   };
 
   const getPhaseInstruction = () => {
@@ -180,6 +190,7 @@ export function GameBoard({
               isMyMine={isMyMine(rowIndex, colIndex)}
               playerRole={playerRole}
               disabled={isCellDisabled()}
+              isLosingCell={isLosingCell(rowIndex, colIndex)}
               onClick={handleCellClick}
               onRightClick={handleCellRightClick}
             />

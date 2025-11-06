@@ -31,6 +31,10 @@
     @apply bg-error text-error-content;
   }
 
+  .cell-losing {
+    @apply bg-red-600 text-white animate-pulse cursor-default;
+  }
+
   .cell-disabled {
     @apply cursor-not-allowed opacity-60;
   }

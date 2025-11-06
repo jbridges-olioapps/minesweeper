@@ -154,6 +154,15 @@ export function useRealtimeGame(gameId: string | null) {
             .update({
               status: "finished",
               winner: opponent,
+              game_state: {
+                board,
+                rows: board.length,
+                cols: board[0]?.length || 0,
+                minesPlacedByPlayer1: countMinesByPlayer(board, "player1"),
+                minesPlacedByPlayer2: countMinesByPlayer(board, "player2"),
+                losingCell: { row, col },
+                lossReason: "placed_on_mine",
+              } as any,
             })
             .eq("id", game.id);
 
@@ -254,10 +263,21 @@ export function useRealtimeGame(gameId: string | null) {
         let nextTurn = game.current_turn;
         let nextPhase = game.turn_phase;
 
+        const gameStateUpdate: any = {
+          board: newBoard,
+          rows: newBoard.length,
+          cols: newBoard[0]?.length || 0,
+          minesPlacedByPlayer1: countMinesByPlayer(newBoard, "player1"),
+          minesPlacedByPlayer2: countMinesByPlayer(newBoard, "player2"),
+        };
+
         if (loseCheck.hitMine) {
           // Current player hit a mine - they lose
           gameStatus = "finished";
           winner = loseCheck.minePlacedBy; // The player who placed the mine wins
+          // Track losing cell and reason
+          gameStateUpdate.losingCell = { row, col };
+          gameStateUpdate.lossReason = "revealed_mine";
         } else if (winCheck.isGameOver) {
           // Game over for some other reason
           gameStatus = "finished";
@@ -272,13 +292,7 @@ export function useRealtimeGame(gameId: string | null) {
         const { error: updateError } = await supabase
           .from("games")
           .update({
-            game_state: {
-              board: newBoard,
-              rows: newBoard.length,
-              cols: newBoard[0]?.length || 0,
-              minesPlacedByPlayer1: countMinesByPlayer(newBoard, "player1"),
-              minesPlacedByPlayer2: countMinesByPlayer(newBoard, "player2"),
-            } as any,
+            game_state: gameStateUpdate,
             current_turn: nextTurn,
             turn_phase: nextPhase,
             status: gameStatus,

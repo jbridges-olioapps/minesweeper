@@ -59,6 +59,10 @@ export interface GameState {
   /** Total number of mines placed by each player */
   minesPlacedByPlayer1: number;
   minesPlacedByPlayer2: number;
+  /** Coordinates of the cell that caused the loss (if game is finished) */
+  losingCell?: { row: number; col: number };
+  /** Reason for the loss */
+  lossReason?: "revealed_mine" | "placed_on_mine";
 }
 
 /**

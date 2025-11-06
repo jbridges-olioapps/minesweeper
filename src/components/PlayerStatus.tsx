@@ -57,6 +57,24 @@ export function PlayerStatus({ game }: PlayerStatusProps) {
 
     const isWinner = game.winner === playerRole;
     const isDraw = !game.winner;
+    const gameState = game.game_state as any;
+    const lossReason = gameState?.lossReason as
+      | "revealed_mine"
+      | "placed_on_mine"
+      | undefined;
+
+    // Get loss reason text
+    const getLossReasonText = () => {
+      if (lossReason === "revealed_mine") {
+        return isWinner ? "Opponent revealed a mine!" : "You revealed a mine!";
+      }
+      if (lossReason === "placed_on_mine") {
+        return isWinner
+          ? "Opponent placed a mine on an existing mine!"
+          : "You placed a mine on an existing mine!";
+      }
+      return "";
+    };
 
     if (isDraw) {
       return (
@@ -73,7 +91,7 @@ export function PlayerStatus({ game }: PlayerStatusProps) {
           <FaTrophy className="text-success-content" />
           <div>
             <h3 className="font-bold">Victory!</h3>
-            <div className="text-sm">You won the game!</div>
+            <div className="text-sm">{getLossReasonText()}</div>
           </div>
         </div>
       );
@@ -84,9 +102,7 @@ export function PlayerStatus({ game }: PlayerStatusProps) {
         <FaSkull className="text-error-content" />
         <div>
           <h3 className="font-bold">Defeat</h3>
-          <div className="text-sm">
-            {game.winner === "player1" ? "Player 1" : "Player 2"} won the game.
-          </div>
+          <div className="text-sm">{getLossReasonText()}</div>
         </div>
       </div>
     );
