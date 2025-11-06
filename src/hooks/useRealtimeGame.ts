@@ -15,7 +15,7 @@ import {
   checkLoseCondition,
   countMinesByPlayer,
 } from "../utils/minesweeper";
-import { getPlayerRole } from "../utils/playerId";
+import { getPlayerRole, getPlayerId } from "../utils/playerId";
 
 /**
  * Hook for managing real-time game state with Supabase.
@@ -261,6 +261,8 @@ export function useRealtimeGame(gameId: string | null) {
 
   /**
    * Toggle flag on a cell
+   * Flags can be placed/removed at any time during your turn, regardless of phase.
+   * Multiple flags can be toggled without consuming your turn or changing phase.
    */
   const toggleFlag = useCallback(
     async (row: number, col: number) => {
@@ -270,15 +272,39 @@ export function useRealtimeGame(gameId: string | null) {
       }
 
       const playerRole = getPlayerRole(game);
+      const playerId = getPlayerId();
 
-      // Validate it's player's turn
+      // Debug logging
+      console.log("🚩 Toggle Flag Debug:", {
+        playerId,
+        playerRole,
+        currentTurn: game.current_turn,
+        player1_id: game.player1_id,
+        player2_id: game.player2_id,
+        gameStatus: game.status,
+        turnPhase: game.turn_phase,
+      });
+
+      // Only prevent spectators from flagging
       if (playerRole === "spectator") {
-        console.error("Spectators cannot flag cells");
+        console.error("❌ Spectators cannot flag cells");
         return;
       }
 
+      // Allow flagging only during your turn (but any phase)
       if (game.current_turn !== playerRole) {
-        console.error("Not your turn");
+        console.error(
+          "❌ Can only flag during your turn. Current turn:",
+          game.current_turn,
+          "Your role:",
+          playerRole
+        );
+        return;
+      }
+
+      // Game must be active
+      if (game.status !== "active") {
+        console.error("❌ Game is not active. Status:", game.status);
         return;
       }
 
@@ -292,6 +318,7 @@ export function useRealtimeGame(gameId: string | null) {
         );
 
         // Update game state (don't change turn/phase for flagging)
+        // This allows unlimited flags during your turn
         const { error: updateError } = await supabase
           .from("games")
           .update({

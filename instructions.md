@@ -58,10 +58,23 @@
 ### 5. Game Types and Interfaces
 
 - Create `src/types/game.ts` with TypeScript interfaces:
-- `Cell` type (has mine with player attribution, revealed, flagged, adjacent mines count)
+- `Cell` type (has mine with `minePlacedBy`, revealed, flagged with `flagPlacedBy`, adjacent mines count)
 - `GameState` type (board array, game status, turn info, turn phase)
 - `Game` type (database record structure matching schema: id, player1_id, player2_id, current_turn, turn_phase, game_state, status, winner, created_at, updated_at)
 - `Move` type (row, col, action: 'place_mine' | 'reveal_cell')
+
+**Cell Structure:**
+
+```typescript
+{
+  hasMine: boolean;
+  minePlacedBy: "player1" | "player2" | null; // Who placed the mine
+  revealed: boolean;
+  flagged: boolean;
+  flagPlacedBy: "player1" | "player2" | null; // Who placed the flag (private to that player)
+  adjacentMines: number;
+}
+```
 
 ### 6. Player Identification (No Auth Required!)
 
@@ -105,9 +118,10 @@
 - Create `src/components/Cell.tsx`:
 - Render individual cell with appropriate styling
 - Show revealed state (number, mine, empty)
-- Show flag state
+- Show flag state (only if `flagPlacedBy` matches current player's role)
 - Show hidden state
 - Handle click events (disabled when not player's turn)
+- Flags are private: only render flag icon if `cell.flagPlacedBy === playerRole`
 
 ### 10. Game Lobby Component
 
@@ -135,10 +149,19 @@
 - Manage local game state
 - Provide `placeMine` function for placing mines
 - Provide `revealCell` function for revealing cells
+- Provide `toggleFlag` function for flagging cells (unlimited per turn, any phase, private to player)
 - Handle turn phase transitions (place_mine → reveal_cell → next player's turn)
 - Handle turn switching logic after reveal phase completes
 - Evaluate win/loss conditions after each reveal
 - Clean up subscriptions on unmount
+
+**Flag Behavior:**
+
+- Flags can be placed/removed unlimited times during your turn
+- Flags work in BOTH phases (place_mine and reveal_cell)
+- Flagging does not consume your turn or advance the phase
+- Flags are private - only visible to the player who placed them (via `flagPlacedBy` field)
+- Only restriction: must be your turn and game must be active
 
 ### 13. Game Management Hook
 

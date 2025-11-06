@@ -46,6 +46,11 @@ export function GameBoard({
   disabled = false,
 }: GameBoardProps) {
   const playerRole = getPlayerRole(game);
+  console.log("🎮 GameBoard playerRole:", {
+    playerRole,
+    player1_id: game.player1_id,
+    player2_id: game.player2_id,
+  });
   const isMyTurn =
     playerRole !== "spectator" && game.current_turn === playerRole;
   const turnPhase = game.turn_phase as TurnPhase | null;
@@ -184,9 +189,13 @@ export function GameBoard({
                 {turnPhase === "place_mine" ? "Place a mine" : "Reveal a cell"}
               </li>
               <li>
-                <strong>Right click:</strong> Toggle flag
+                <strong>Right click:</strong> Toggle flag (unlimited per turn,
+                any phase)
               </li>
             </ul>
+            <p className="text-xs mt-2 italic">
+              💡 Flags are private - only you can see your flags!
+            </p>
           </div>
         </div>
       </div>
