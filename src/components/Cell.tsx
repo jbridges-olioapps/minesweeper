@@ -1,19 +1,48 @@
+/**
+ * @fileoverview Cell component for the Minesweeper game board.
+ * Represents a single cell with various states: hidden, revealed, flagged, or containing a mine.
+ */
+
 import { FaBomb, FaFlag } from "react-icons/fa";
 import { MdQuestionMark } from "react-icons/md";
 import type { Cell as CellType } from "../types/game";
 
+/**
+ * Props for the Cell component
+ */
 interface CellProps {
+  /** The cell data including mine status, revealed state, and adjacent mine count */
   cell: CellType;
+  /** Row index of the cell on the board */
   row: number;
+  /** Column index of the cell on the board */
   col: number;
+  /** Whether it's currently the player's turn */
   isMyTurn: boolean;
+  /** Current turn phase (place_mine or reveal_cell) */
   turnPhase: "place_mine" | "reveal_cell" | null;
+  /** Whether the mine in this cell belongs to the current player */
   isMyMine: boolean;
+  /** Whether cell interactions are disabled */
   disabled: boolean;
+  /** Callback when cell is left-clicked */
   onClick: (row: number, col: number) => void;
+  /** Callback when cell is right-clicked (for flagging) */
   onRightClick: (row: number, col: number) => void;
 }
 
+/**
+ * Cell component - Renders a single minesweeper cell with appropriate styling and content.
+ *
+ * Displays:
+ * - Flag icon when flagged
+ * - Mine icon when revealed and contains a mine
+ * - Number showing adjacent mine count when revealed
+ * - Empty state when hidden
+ *
+ * Supports both left-click (reveal/place mine) and right-click (flag) interactions.
+ * Includes keyboard accessibility with Enter/Space key support.
+ */
 export function Cell({
   cell,
   row,

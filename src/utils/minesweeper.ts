@@ -1,7 +1,17 @@
+/**
+ * @fileoverview Core minesweeper game logic utilities.
+ * Handles board generation, mine placement, cell revealing, and win/loss conditions.
+ */
+
 import type { Board, PlayerTurn, GameResult } from "../types/game";
 
 /**
- * Generate an empty board without any mines
+ * Generate an empty board without any mines.
+ * All cells are initialized as unrevealed, unflagged, with no mines.
+ *
+ * @param rows - Number of rows in the board
+ * @param cols - Number of columns in the board
+ * @returns A 2D array representing the empty game board
  */
 export function generateEmptyBoard(rows: number, cols: number): Board {
   const board: Board = [];

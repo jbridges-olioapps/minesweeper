@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { GameBoard } from "./components/GameBoard";
 import { GameLobby } from "./components/GameLobby";
+import { PlayerStatus } from "./components/PlayerStatus";
 import {
   generateEmptyBoard,
   placeMine,
@@ -163,7 +164,7 @@ function App() {
   // Show game board
   return (
     <div className="min-h-screen bg-base-300">
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto py-8 px-4">
         <div className="text-center mb-4">
           <h1 className="text-4xl font-bold mb-2">Multiplayer Minesweeper</h1>
           <button
@@ -174,6 +175,12 @@ function App() {
           </button>
         </div>
 
+        {/* Player Status */}
+        <div className="max-w-2xl mx-auto mb-6">
+          <PlayerStatus game={currentGame} />
+        </div>
+
+        {/* Game Board */}
         <GameBoard
           game={currentGame}
           board={board}

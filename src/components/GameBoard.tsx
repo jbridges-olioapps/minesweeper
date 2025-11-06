@@ -1,16 +1,43 @@
+/**
+ * @fileoverview GameBoard component - Main game interface for multiplayer minesweeper.
+ * Displays the game board, status information, and handles player interactions.
+ */
+
 import type { Game } from "../lib/supabase";
 import type { Board, GameStatus, TurnPhase } from "../types/game";
 import { getPlayerRole } from "../utils/playerId";
 import { Cell } from "./Cell";
 
+/**
+ * Props for the GameBoard component
+ */
 interface GameBoardProps {
+  /** Current game state from Supabase */
   game: Game;
+  /** 2D array representing the game board */
   board: Board;
+  /** Callback when a cell is left-clicked (place mine or reveal) */
   onCellClick: (row: number, col: number) => void;
+  /** Callback when a cell is right-clicked (toggle flag) */
   onCellRightClick: (row: number, col: number) => void;
+  /** Whether all interactions should be disabled */
   disabled?: boolean;
 }
 
+/**
+ * GameBoard component - Displays the minesweeper game board with status and controls.
+ *
+ * Features:
+ * - Renders grid of Cell components
+ * - Shows current turn indicator and turn phase
+ * - Displays game status (waiting, active, finished)
+ * - Phase-specific instructions for players
+ * - Hides opponent's mines until revealed
+ * - Disables interactions when not player's turn
+ * - Shows win/loss status
+ *
+ * The board presents different views depending on the player role to prevent cheating.
+ */
 export function GameBoard({
   game,
   board,

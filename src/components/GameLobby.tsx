@@ -1,3 +1,8 @@
+/**
+ * @fileoverview GameLobby component - Entry point for creating and joining games.
+ * Handles game creation, game ID sharing, and joining existing games.
+ */
+
 import { useState } from "react";
 import { FaCopy, FaCheck, FaGamepad, FaUsers } from "react-icons/fa";
 import { MdContentPaste } from "react-icons/md";
@@ -6,10 +11,28 @@ import type { Game } from "../lib/supabase";
 import { getPlayerId } from "../utils/playerId";
 import { generateEmptyBoard } from "../utils/minesweeper";
 
+/**
+ * Props for the GameLobby component
+ */
 interface GameLobbyProps {
+  /** Callback invoked when a player successfully joins a game */
   onGameJoined: (game: Game) => void;
 }
 
+/**
+ * GameLobby component - Main lobby interface for creating and joining games.
+ *
+ * Features:
+ * - Create new game button that generates a unique game ID
+ * - Display shareable game ID with copy-to-clipboard functionality
+ * - Join existing game by entering game ID
+ * - Paste game ID from clipboard
+ * - Waiting screen with spinner when waiting for opponent
+ * - Error handling for invalid game IDs and connection issues
+ * - How-to-play instructions
+ *
+ * Uses localStorage-based player identification (no authentication required).
+ */
 export function GameLobby({ onGameJoined }: GameLobbyProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
