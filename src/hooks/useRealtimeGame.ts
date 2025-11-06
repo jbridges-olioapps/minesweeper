@@ -139,7 +139,37 @@ export function useRealtimeGame(gameId: string | null) {
         return;
       }
 
-      // Validate mine placement
+      // Check if cell already has a mine - this is a lose condition!
+      const cell = board[row][col];
+      if (cell.hasMine) {
+        console.log("Player tried to place mine on existing mine - they lose!");
+
+        // Opponent wins
+        const opponent: PlayerTurn =
+          playerRole === "player1" ? "player2" : "player1";
+
+        try {
+          const { error: updateError } = await supabase
+            .from("games")
+            .update({
+              status: "finished",
+              winner: opponent,
+            })
+            .eq("id", game.id);
+
+          if (updateError) throw updateError;
+
+          console.log(
+            `Game over! ${opponent} wins because ${playerRole} placed mine on existing mine`
+          );
+        } catch (err) {
+          console.error("Error ending game:", err);
+          setError(err instanceof Error ? err.message : "Failed to end game");
+        }
+        return;
+      }
+
+      // Validate mine placement (checks revealed cells and bounds)
       const validation = isValidMinePlacement(board, row, col);
       if (!validation.isValid) {
         console.error("Invalid mine placement:", validation.error);

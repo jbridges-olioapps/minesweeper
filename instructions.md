@@ -33,10 +33,12 @@
 
 - **Custom Board Dimensions**: Players can choose board size from 5x5 to 20x20
 - **Pre-placed Mines**: Configure initial number of random mines (0 to board size / 3)
-- **Strategic Gameplay**: Revealing ANY mine causes you to lose
+- **Strategic Gameplay**: Multiple ways to lose
+  - **Revealing ANY mine**: Causes you to lose immediately
+  - **Placing mine on existing mine**: Instant loss! Be careful where you place
   - Pre-placed mines (no player attribution) add extra danger
   - Player-placed mines create strategic traps
-  - Goal: Avoid mines while forcing opponent to reveal them
+  - Goal: Avoid mines while forcing opponent into them
 - **Dynamic Mine Density**: Larger boards support more pre-placed mines
 - **Real-time Configuration Preview**: See board stats (size, cells, mines) before creating
 
@@ -117,8 +119,9 @@
 - `countAdjacentMines(board, row, col)` - Count mines around a cell
 - `isValidMinePlacement(board, row, col)` - Validate mine placement:
   - Cell must not be revealed
-  - Cell must not already have a mine
+  - Cell must not already have a mine (returns validation error)
   - Cell must be within board bounds
+  - Note: In game logic, placing mine on existing mine is checked separately as a lose condition
 
 ## React Components
 
@@ -128,7 +131,8 @@
 - Render grid of cells
 - Display current turn indicator and turn phase (place mine or reveal)
 - Handle mine placement click during 'place_mine' phase
-  - Prevent clicking on revealed cells or cells that already have mines
+  - Prevent clicking on revealed cells (shows toast warning)
+  - Placing mine on existing mine = instant loss (handled by game logic)
   - Show toast notifications for invalid actions (DaisyUI styled)
   - UI-level validation for better user experience
 - Handle cell reveal click during 'reveal_cell' phase
@@ -190,8 +194,9 @@
 - Subscribe to real-time updates via `postgres_changes` event
 - Manage local game state
 - Provide `placeMine` function for placing mines
+  - **Critical check**: If cell already has a mine, player instantly loses (opponent wins)
   - Validates mine placement using `isValidMinePlacement`
-  - Prevents placing mines on revealed cells or cells with existing mines
+  - Prevents placing mines on revealed cells
   - Sets error state if validation fails
 - Provide `revealCell` function for revealing cells
 - Provide `toggleFlag` function for flagging cells (unlimited per turn, any phase, private to player)
@@ -250,10 +255,14 @@
 - Create `src/index.css` with:
 - Board grid layout
 - Cell styling (hidden, revealed, flagged states)
+  - Unrevealed cells: white background (`bg-base-100`)
+  - Revealed cells: darker grey background (`bg-base-300`)
+  - Flagged cells: warning color with transparency
+  - Hover states for interactivity
 - Turn indicator styling
 - Responsive design
-- Color scheme for different cell states
-- Use DaisyUI for themes
+- Color scheme for different cell states (numbered cells use distinct colors)
+- Use DaisyUI for themes and consistent color tokens
 
 ## Testing & Validation
 
@@ -262,7 +271,10 @@
 - Add client-side validation:
 - Check if it's player's turn (use `getPlayerRole()`)
 - Validate cell coordinates
-- For `placeMine`: Check turn_phase is 'place_mine', cell not revealed, cell doesn't already have mine
+- For `placeMine`:
+  - Check turn_phase is 'place_mine'
+  - Check cell not revealed
+  - **If cell has mine: End game with opponent winning (lose condition)**
 - For `revealCell`: Check turn_phase is 'reveal_cell', cell not already revealed
 - Prevent flagging revealed cells
 - Ensure actions match current turn phase

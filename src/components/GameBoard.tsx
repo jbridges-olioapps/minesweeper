@@ -57,17 +57,14 @@ export function GameBoard({
   const handleCellClick = (row: number, col: number) => {
     if (disabled || !isMyTurn || status !== "active") return;
 
-    // During place_mine phase, don't allow clicking revealed cells or cells with mines
+    // During place_mine phase, don't allow clicking revealed cells
     if (turnPhase === "place_mine") {
       const cell = board[row][col];
       if (cell.revealed) {
         showToast("Can't place mine in revealed cell", "warning");
         return;
       }
-      if (cell.hasMine) {
-        showToast("Cell already has a mine", "warning");
-        return;
-      }
+      // Placing mine on existing mine is now a lose condition (handled in useRealtimeGame)
     }
 
     onCellClick(row, col);
