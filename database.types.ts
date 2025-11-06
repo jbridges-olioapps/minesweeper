@@ -53,6 +53,40 @@ export type Database = {
         };
         Relationships: [];
       };
+      messages: {
+        Row: {
+          id: string;
+          game_id: string;
+          player_id: string;
+          player_role: string;
+          message: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          game_id: string;
+          player_id: string;
+          player_role: string;
+          message: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          game_id?: string;
+          player_id?: string;
+          player_role?: string;
+          message?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "messages_game_id_fkey";
+            columns: ["game_id"];
+            referencedRelation: "games";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     };
     Views: {
       [_ in never]: never;

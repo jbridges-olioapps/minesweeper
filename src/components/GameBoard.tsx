@@ -4,11 +4,13 @@
  */
 
 import type { Game } from "../lib/supabase";
-import type { Board, GameStatus, TurnPhase } from "../types/game";
-import { getPlayerRole } from "../utils/playerId";
+import type { Board, GameStatus, TurnPhase, PlayerTurn } from "../types/game";
+import { getPlayerRole, getPlayerId } from "../utils/playerId";
 import { useToast } from "../hooks/useToast";
+import { useChat } from "../hooks/useChat";
 import { Cell } from "./Cell";
 import { Toast } from "./Toast";
+import { Chat } from "./Chat";
 
 /**
  * Props for the GameBoard component
@@ -49,10 +51,14 @@ export function GameBoard({
 }: GameBoardProps) {
   const { toasts, showToast, removeToast } = useToast();
   const playerRole = getPlayerRole(game);
+  const playerId = getPlayerId();
   const isMyTurn =
     playerRole !== "spectator" && game.current_turn === playerRole;
   const turnPhase = game.turn_phase as TurnPhase | null;
   const status = game.status as GameStatus;
+
+  // Chat hook
+  const { messages, loading: chatLoading, sendMessage } = useChat(game.id);
 
   // Get losing cell coordinates from game state
   const gameState = game.game_state as any;
@@ -153,6 +159,15 @@ export function GameBoard({
 
   const cols = board[0]?.length || 0;
 
+  const handleSendMessage = async (message: string) => {
+    if (playerRole === "spectator") {
+      console.error("Spectators cannot send messages");
+      return false;
+    }
+
+    return await sendMessage(message, playerId, playerRole as PlayerTurn);
+  };
+
   return (
     <div className="flex flex-col items-center gap-4 p-4">
       {/* Status Header */}
@@ -229,6 +244,15 @@ export function GameBoard({
           </div>
         </div>
       </div>
+
+      {/* Chat Component */}
+      <Chat
+        messages={messages}
+        playerRole={playerRole}
+        onSendMessage={handleSendMessage}
+        disabled={playerRole === "spectator"}
+        loading={chatLoading}
+      />
 
       {/* Toast Notifications */}
       <Toast toasts={toasts} onRemove={removeToast} />

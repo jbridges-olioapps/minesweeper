@@ -18,3 +18,7 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 export type Game = Database["public"]["Tables"]["games"]["Row"];
 export type GameInsert = Database["public"]["Tables"]["games"]["Insert"];
 export type GameUpdate = Database["public"]["Tables"]["games"]["Update"];
+
+export type Message = Database["public"]["Tables"]["messages"]["Row"];
+export type MessageInsert = Database["public"]["Tables"]["messages"]["Insert"];
+export type MessageUpdate = Database["public"]["Tables"]["messages"]["Update"];
