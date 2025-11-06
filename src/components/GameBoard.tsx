@@ -1,8 +1,7 @@
-import { FaBomb, FaFlag } from "react-icons/fa";
-import { MdQuestionMark } from "react-icons/md";
 import type { Game } from "../lib/supabase";
 import type { Board, GameStatus, TurnPhase } from "../types/game";
 import { getPlayerRole } from "../utils/playerId";
+import { Cell } from "./Cell";
 
 interface GameBoardProps {
   game: Game;
@@ -30,78 +29,18 @@ export function GameBoard({
     onCellClick(row, col);
   };
 
-  const handleCellRightClick = (
-    e: React.MouseEvent,
-    row: number,
-    col: number
-  ) => {
-    e.preventDefault();
+  const handleCellRightClick = (row: number, col: number) => {
     if (disabled || !isMyTurn || status !== "active") return;
     onCellRightClick(row, col);
   };
 
-  const getCellContent = (row: number, col: number) => {
-    const cell = board[row][col];
-
-    // Show flag if cell is flagged
-    if (cell.flagged) {
-      return <FaFlag className="text-warning" />;
-    }
-
-    // If cell is not revealed, show empty or question mark
-    if (!cell.revealed) {
-      return turnPhase === "place_mine" && isMyTurn ? (
-        <MdQuestionMark className="text-base-content/30" />
-      ) : null;
-    }
-
-    // Cell is revealed
-    // Show mine if it has one (only show if revealed)
-    if (cell.hasMine) {
-      const isMyMine =
-        playerRole !== "spectator" && cell.minePlacedBy === playerRole;
-      return (
-        <FaBomb
-          className={isMyMine ? "text-primary" : "text-error"}
-          title={isMyMine ? "Your mine" : "Opponent's mine"}
-        />
-      );
-    }
-
-    // Show adjacent mine count
-    if (cell.adjacentMines > 0) {
-      return (
-        <span className={`cell-number-${cell.adjacentMines}`}>
-          {cell.adjacentMines}
-        </span>
-      );
-    }
-
-    // Empty cell
-    return null;
+  const isCellDisabled = () => {
+    return disabled || !isMyTurn || status !== "active";
   };
 
-  const getCellClassName = (row: number, col: number) => {
+  const isMyMine = (row: number, col: number) => {
     const cell = board[row][col];
-    const classes = ["cell"];
-
-    if (cell.revealed) {
-      classes.push("cell-revealed");
-      if (cell.hasMine) {
-        classes.push("cell-mine");
-      }
-    } else {
-      classes.push("cell-hidden");
-      if (cell.flagged) {
-        classes.push("cell-flagged");
-      }
-    }
-
-    if (disabled || !isMyTurn || status !== "active") {
-      classes.push("cell-disabled");
-    }
-
-    return classes.join(" ");
+    return playerRole !== "spectator" && cell.minePlacedBy === playerRole;
   };
 
   const getPhaseInstruction = () => {
@@ -189,16 +128,19 @@ export function GameBoard({
         }}
       >
         {board.map((row, rowIndex) =>
-          row.map((_, colIndex) => (
-            <div
+          row.map((cell, colIndex) => (
+            <Cell
               key={`${rowIndex}-${colIndex}`}
-              className={getCellClassName(rowIndex, colIndex)}
-              onClick={() => handleCellClick(rowIndex, colIndex)}
-              onContextMenu={(e) => handleCellRightClick(e, rowIndex, colIndex)}
-              title={`Cell ${rowIndex},${colIndex}`}
-            >
-              {getCellContent(rowIndex, colIndex)}
-            </div>
+              cell={cell}
+              row={rowIndex}
+              col={colIndex}
+              isMyTurn={isMyTurn}
+              turnPhase={turnPhase}
+              isMyMine={isMyMine(rowIndex, colIndex)}
+              disabled={isCellDisabled()}
+              onClick={handleCellClick}
+              onRightClick={handleCellRightClick}
+            />
           ))
         )}
       </div>
