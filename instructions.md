@@ -37,11 +37,15 @@
 - `player1_id` (TEXT)
 - `player2_id` (TEXT)
 - `current_turn` (TEXT: 'player1' or 'player2')
-- `game_state` (JSONB: board, revealed cells, flags, mine positions)
+- `turn_phase` (TEXT: 'place_mine' or 'reveal_cell')
+- `game_state` (JSONB: board with revealed cells, flags, dynamically placed mine positions with player attribution)
 - `status` (TEXT: 'waiting', 'active', 'finished')
+- `winner` (TEXT: 'player1', 'player2', or NULL)
 - `created_at` (TIMESTAMP)
+- `updated_at` (TIMESTAMP)
 - Enable Realtime on the `games` table
 - Create indexes for performance
+- Game flow: Each turn consists of placing a mine, then revealing a cell. After reveal, game state is evaluated, changes pushed, and turn passes to next player
 
 ### 4. Supabase Client Configuration
 
@@ -63,9 +67,9 @@
 
 - Create `src/utils/minesweeper.ts` with core game functions:
 - `generateBoard(rows, cols, mineCount)` - Generate board with random mine placement
-- `revealCell(board, row, col)` - Reveal cell and cascade reveal adjacent cells
+- `revealCell(board, row, col)` - Reveal cell and cascade reveal adjacent cells that aren't bordered by mines
 - `toggleFlag(board, row, col)` - Toggle flag on cell
-- `checkWinCondition(board)` - Check if all non-mine cells are revealed
+- `checkWinCondition(board)` - Check if all non-mine bordered cells are revealed
 - `checkLoseCondition(board, row, col)` - Check if mine was revealed
 - `countAdjacentMines(board, row, col)` - Count mines around a cell
 
@@ -79,6 +83,7 @@
 - Display current turn indicator
 - Show game status (waiting, active, finished)
 - Disable interactions when not player's turn
+- The Gameboard will present a different view depending on the player
 
 ### 8. Cell Component
 
@@ -150,6 +155,7 @@
 - Turn indicator styling
 - Responsive design
 - Color scheme for different cell states
+- Use DaisyUI for themes
 
 ## Testing & Validation
 
