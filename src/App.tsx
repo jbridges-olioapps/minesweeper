@@ -2,6 +2,7 @@ import { useState } from "react";
 import { GameBoard } from "./components/GameBoard";
 import { GameLobby } from "./components/GameLobby";
 import { PlayerStatus } from "./components/PlayerStatus";
+import { ThemeController } from "./components/ThemeController";
 import { useRealtimeGame } from "./hooks/useRealtimeGame";
 import type { Game } from "./lib/supabase";
 import "./App.css";
@@ -79,14 +80,19 @@ function App() {
   return (
     <div className="min-h-screen bg-base-300">
       <div className="container mx-auto py-8 px-4">
-        <div className="text-center mb-4">
-          <h1 className="text-4xl font-bold mb-2">Multiplayer Minesweeper</h1>
-          <button
-            className="btn btn-ghost btn-sm"
-            onClick={() => setGameId(null)}
-          >
-            ← Back to Lobby
-          </button>
+        <div className="relative">
+          <div className="absolute top-0 right-0">
+            <ThemeController />
+          </div>
+          <div className="text-center mb-4">
+            <h1 className="text-4xl font-bold mb-2">Multiplayer Minesweeper</h1>
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={() => setGameId(null)}
+            >
+              ← Back to Lobby
+            </button>
+          </div>
         </div>
 
         {/* Player Status */}
