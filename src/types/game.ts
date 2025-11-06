@@ -63,6 +63,10 @@ export interface GameState {
   losingCell?: { row: number; col: number };
   /** Reason for the loss */
   lossReason?: "revealed_mine" | "placed_on_mine";
+  /** Tracks whose flag was stolen (for notifications) */
+  flagStolenFrom?: PlayerTurn;
+  /** Timestamp of last flag steal for notification purposes */
+  flagStolenAt?: number;
 }
 
 /**

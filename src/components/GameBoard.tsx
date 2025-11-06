@@ -3,8 +3,15 @@
  * Displays the game board, status information, and handles player interactions.
  */
 
+import { useEffect, useRef } from "react";
 import type { Game } from "../lib/supabase";
-import type { Board, GameStatus, TurnPhase, PlayerTurn } from "../types/game";
+import type {
+  Board,
+  GameStatus,
+  TurnPhase,
+  PlayerTurn,
+  GameState as GameStateType,
+} from "../types/game";
 import { getPlayerRole, getPlayerId } from "../utils/playerId";
 import { useToast } from "../hooks/useToast";
 import { useChat } from "../hooks/useChat";
@@ -65,6 +72,24 @@ export function GameBoard({
   const losingCell = gameState?.losingCell as
     | { row: number; col: number }
     | undefined;
+
+  // Track last flag stolen timestamp to avoid showing duplicate toasts
+  const lastFlagStolenAtRef = useRef<number>(0);
+
+  // Watch for flag stealing notifications
+  useEffect(() => {
+    const typedGameState = gameState as GameStateType | undefined;
+
+    if (
+      typedGameState?.flagStolenFrom === playerRole &&
+      typedGameState?.flagStolenAt &&
+      typedGameState.flagStolenAt > lastFlagStolenAtRef.current
+    ) {
+      // Our flag was stolen!
+      lastFlagStolenAtRef.current = typedGameState.flagStolenAt;
+      showToast("The other player has stolen your flag!", "warning");
+    }
+  }, [gameState, playerRole, showToast]);
 
   const handleCellClick = (row: number, col: number) => {
     if (disabled || !isMyTurn || status !== "active") return;

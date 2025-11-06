@@ -372,25 +372,33 @@ export function useRealtimeGame(gameId: string | null) {
 
       try {
         // Toggle flag with player attribution
-        const newBoard = toggleFlagUtil(
-          board,
-          row,
-          col,
-          playerRole as PlayerTurn
-        );
+        const {
+          board: newBoard,
+          flagStolen,
+          stolenFrom,
+        } = toggleFlagUtil(board, row, col, playerRole as PlayerTurn);
+
+        // Build game state update
+        const gameStateUpdate: any = {
+          board: newBoard,
+          rows: newBoard.length,
+          cols: newBoard[0]?.length || 0,
+          minesPlacedByPlayer1: countMinesByPlayer(newBoard, "player1"),
+          minesPlacedByPlayer2: countMinesByPlayer(newBoard, "player2"),
+        };
+
+        // If a flag was stolen, record it for notification purposes
+        if (flagStolen && stolenFrom) {
+          gameStateUpdate.flagStolenFrom = stolenFrom;
+          gameStateUpdate.flagStolenAt = Date.now();
+        }
 
         // Update game state (don't change turn/phase for flagging)
         // This allows unlimited flags during your turn
         const { error: updateError } = await supabase
           .from("games")
           .update({
-            game_state: {
-              board: newBoard,
-              rows: newBoard.length,
-              cols: newBoard[0]?.length || 0,
-              minesPlacedByPlayer1: countMinesByPlayer(newBoard, "player1"),
-              minesPlacedByPlayer2: countMinesByPlayer(newBoard, "player2"),
-            } as any,
+            game_state: gameStateUpdate,
           })
           .eq("id", game.id);
 

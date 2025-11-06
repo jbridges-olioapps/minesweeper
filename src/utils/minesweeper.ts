@@ -208,26 +208,33 @@ export function revealCell(board: Board, row: number, col: number): Board {
  * @param row - Row index of the cell
  * @param col - Column index of the cell
  * @param playerId - The player placing/removing the flag
- * @returns Updated board with flag toggled
+ * @returns Object with updated board and whether a flag was stolen
  */
 export function toggleFlag(
   board: Board,
   row: number,
   col: number,
   playerId: PlayerTurn
-): Board {
+): { board: Board; flagStolen: boolean; stolenFrom: PlayerTurn | null } {
   // Create a deep copy of the board
   const newBoard = board.map((r) => r.map((cell) => ({ ...cell })));
+  let flagStolen = false;
+  let stolenFrom: PlayerTurn | null = null;
 
   // Don't allow flagging revealed cells
   if (!newBoard[row][col].revealed) {
     const cell = newBoard[row][col];
 
     if (cell.flagged) {
-      // Remove flag (only if it belongs to this player)
+      // If flag belongs to this player, remove it
       if (cell.flagPlacedBy === playerId) {
         cell.flagged = false;
         cell.flagPlacedBy = null;
+      } else {
+        // If flag belongs to another player, steal it!
+        stolenFrom = cell.flagPlacedBy;
+        cell.flagPlacedBy = playerId;
+        flagStolen = true;
       }
     } else {
       // Place flag
@@ -236,7 +243,7 @@ export function toggleFlag(
     }
   }
 
-  return newBoard;
+  return { board: newBoard, flagStolen, stolenFrom };
 }
 
 /**
